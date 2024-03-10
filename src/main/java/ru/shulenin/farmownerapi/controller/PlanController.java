@@ -12,7 +12,7 @@ import ru.shulenin.farmownerapi.service.PlanService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/plan")
+@RequestMapping("/owner-api/v1/plan")
 @RequiredArgsConstructor
 public class PlanController {
     private final PlanService planService;

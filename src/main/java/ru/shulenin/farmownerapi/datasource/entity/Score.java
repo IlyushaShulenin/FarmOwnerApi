@@ -28,7 +28,5 @@ public class Score implements Serializable {
 
     private Integer score;
 
-    private Boolean planIsCompleted;
-
     private Instant date;
 }

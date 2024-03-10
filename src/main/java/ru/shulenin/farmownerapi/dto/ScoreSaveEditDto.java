@@ -12,6 +12,5 @@ import java.time.Instant;
 public class ScoreSaveEditDto extends AbstractDto {
     private Long workerId;
     private Integer score;
-    private Boolean planIsCompleted;
     private Instant date;
 }
