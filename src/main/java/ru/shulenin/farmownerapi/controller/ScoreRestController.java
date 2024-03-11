@@ -22,7 +22,7 @@ import java.util.List;
 @RequestMapping("/owner-api/v1/score")
 @Slf4j
 public class ScoreRestController {
-    private ScoreService scoreService;
+    private final ScoreService scoreService;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)

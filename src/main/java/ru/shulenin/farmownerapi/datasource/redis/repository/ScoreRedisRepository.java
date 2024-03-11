@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 import ru.shulenin.farmownerapi.datasource.entity.Score;
-import ru.shulenin.farmownerapi.datasource.entity.Worker;
 import ru.shulenin.farmownerapi.exception.ThereAreNotEntities;
 
 import java.util.HashMap;

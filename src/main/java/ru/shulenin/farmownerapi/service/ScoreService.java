@@ -1,5 +1,6 @@
 package ru.shulenin.farmownerapi.service;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,11 @@ public class ScoreService {
 
     private final ScoreMapper scoreMapper = ScoreMapper.INSTANCE;
     private final WorkerMapper workerMapper = WorkerMapper.INSTANCE;
+
+    @PostConstruct
+    public void init() {
+        scoreRedisRepository.clear();
+    }
 
     public List<ScoreReadDto> findAll() throws ThereAreNotEntities {
         if (scoreRedisRepository.isEmpty()) {

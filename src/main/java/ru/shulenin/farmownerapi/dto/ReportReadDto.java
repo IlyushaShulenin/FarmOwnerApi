@@ -4,15 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
 import java.time.LocalDate;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class ScoreReadDto extends AbstractDto {
-    private Long id;
+@AllArgsConstructor
+public class ReportReadDto {
     private WorkerReadDto worker;
-    private Integer score;
+    private ProductReadDto product;
+    private Float amount;
     private LocalDate date;
+    private Boolean planIsCompleted;
 }

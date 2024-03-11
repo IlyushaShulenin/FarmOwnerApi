@@ -14,6 +14,5 @@ public interface WorkerMapper {
 
     public WorkerReadDto workerToWorkerReadDto(Worker worker);
     public WorkerSendDto workerToWorkerSendDto(Worker worker);
-
     public Worker workerSaveEditdtoToWorker(WorkerSaveEditDto worker);
 }
