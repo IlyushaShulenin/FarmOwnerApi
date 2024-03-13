@@ -16,6 +16,37 @@ spring:
       port: 6379
       url: jdbc:redis://localhost:6379/0
 
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+
+#    mail:
+#      host:
+#      port: 587
+#      username: ilya.shulenin36@gmail.com
+#      password: balwstirrjondcdg
+#      protocol: smtps
+#      properties:
+#        mail:
+#          smtp:
+#            auth: true
+#            starttls:
+#              enable: true
+
+
+  mail:
+    host: smtp.mail.ru
+    port: 465
+    username: ilya-shulenin@mail.ru
+    password: p9fkFzpAx2zLtXvRaecr
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+    protocol: smtps
+
 server:
   port: 8081
 

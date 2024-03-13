@@ -15,6 +15,9 @@ import ru.shulenin.farmownerapi.service.PlanService;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Контроллер для планов
+ */
 @RestController
 @RequestMapping("/owner-api/v1/plan")
 @RequiredArgsConstructor
@@ -22,6 +25,11 @@ import java.util.List;
 public class PlanRestController {
     private final PlanService planService;
 
+    /**
+     * Вернуть все планы
+     * @return список планов
+     * @throws ThereAreNotEntities
+     */
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<PlanReadDto> findAll() throws ThereAreNotEntities {
@@ -33,6 +41,11 @@ public class PlanRestController {
         }
     }
 
+    /**
+     * Найти план по id
+     * @param id id плана
+     * @return dto плана для чтения
+     */
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public PlanReadDto findById(@PathVariable Long id) {
@@ -43,6 +56,12 @@ public class PlanRestController {
                 });
     }
 
+
+    /**
+     * Сохранение плана
+     * @param planDto dto плана для сохранения
+     * @return dto плана для чтения
+     */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public PlanReadDto save(@RequestBody @Valid PlanSaveEditDto planDto) {
@@ -50,6 +69,11 @@ public class PlanRestController {
                 .get();
     }
 
+    /**
+     * Удаление плана по id
+     * @param id id плана
+     * @return true если план успешно удален, иначе false
+     */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public boolean delete(@PathVariable Long id) {

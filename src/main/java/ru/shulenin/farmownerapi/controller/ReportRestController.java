@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import ru.shulenin.farmownerapi.dto.ReportReceiveDto;
 import ru.shulenin.farmownerapi.service.ReportService;
 
+/**
+ * Контроллер для получения отчетов
+ */
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/owner-api/v1/report")
@@ -16,6 +19,10 @@ import ru.shulenin.farmownerapi.service.ReportService;
 public class ReportRestController {
     private final ReportService reportService;
 
+    /**
+     * Получение и сохранение отчета
+     * @param reportDto dto для получения сообщения
+     */
     @PostMapping
     @KafkaListener(id = "ReportSave", topics = {"report.save"}, containerFactory = "singleFactory")
     public void save(ReportReceiveDto reportDto) {

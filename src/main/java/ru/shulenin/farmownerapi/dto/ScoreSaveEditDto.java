@@ -8,9 +8,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
 import java.time.LocalDate;
 
+/**
+ * Dto баллов для сохранения
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

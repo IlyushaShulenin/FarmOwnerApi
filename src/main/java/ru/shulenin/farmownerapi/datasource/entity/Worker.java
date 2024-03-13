@@ -8,8 +8,10 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.rmi.server.UID;
 
+/**
+ * Сущность рабочего
+ */
 @Entity
 @Data
 @AllArgsConstructor

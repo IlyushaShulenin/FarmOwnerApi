@@ -15,6 +15,9 @@ import ru.shulenin.farmownerapi.service.ProductService;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Контроллер для продуктов
+ */
 @RestController
 @RequestMapping("/owner-api/v1/products")
 @RequiredArgsConstructor
@@ -22,6 +25,10 @@ import java.util.List;
 public class ProductRestController {
     private final ProductService productService;
 
+    /**
+     * Вернуть все продукты
+     * @return список продуктов
+     */
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<ProductReadDto> findAll() {
@@ -33,6 +40,11 @@ public class ProductRestController {
         }
     }
 
+    /**
+     * Получить продукт по id
+     * @param id id продукта
+     * @return dto продукта для чтения
+     */
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public ProductReadDto findById(@PathVariable("id") Long id) {
@@ -43,6 +55,11 @@ public class ProductRestController {
                 });
     }
 
+    /**
+     * Сохранить продукт
+     * @param productDto dto продукта для сохранения
+     * @return dto продукта для чтения
+     */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ProductReadDto save(@RequestBody @Valid ProductSaveEditDto productDto) {
@@ -50,6 +67,11 @@ public class ProductRestController {
                 .get();
     }
 
+    /**
+     * Удаление продукта по id
+     * @param id id продукта
+     * @return true если продукт успешно удален, иначе false
+     */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public boolean delete(@PathVariable("id") Long id) {

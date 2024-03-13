@@ -9,6 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.shulenin.farmownerapi.datasource.entity.Owner;
 import ru.shulenin.farmownerapi.datasource.repository.OwnerRepository;
 
+/**
+ * Сервис для работы с владельцем
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional

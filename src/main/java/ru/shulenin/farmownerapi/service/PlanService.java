@@ -1,15 +1,12 @@
 package ru.shulenin.farmownerapi.service;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.shulenin.farmownerapi.datasource.entity.Plan;
-import ru.shulenin.farmownerapi.datasource.entity.Worker;
 import ru.shulenin.farmownerapi.datasource.redis.repository.PlanRedisRepository;
 import ru.shulenin.farmownerapi.datasource.repository.PlanRepository;
 import ru.shulenin.farmownerapi.datasource.repository.ProductRepository;
@@ -25,6 +22,9 @@ import ru.shulenin.farmownerapi.mapper.WorkerMapper;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Сервис для работы с планами
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -41,11 +41,19 @@ public class PlanService {
     private final WorkerMapper workerMapper = WorkerMapper.INSTANCE;
     private final ProductMapper productMapper = ProductMapper.INSTANCE;
 
+    /**
+     * Инициализация кэша
+     */
     @PostConstruct
     public void init() {
         planRedisRepository.clear();
     }
 
+    /**
+     * Получить все планы
+     * @return список планов
+     * @throws ThereAreNotEntities
+     */
     public List<PlanReadDto> findAll() throws ThereAreNotEntities {
         if (planRedisRepository.isEmpty()) {
             List<Plan> plans = planRepository.findAll();
@@ -64,6 +72,11 @@ public class PlanService {
                 .toList();
     }
 
+    /**
+     * Получить план по id
+     * @param id id плана
+     * @return план
+     */
     public Optional<PlanReadDto> findById(Long id) {
         var plan = planRedisRepository.findById(id);
 
@@ -85,6 +98,11 @@ public class PlanService {
                 .map(this::toDto);
     }
 
+    /**
+     * Сохранить план
+     * @param planDto dto плана для сохранения
+     * @return dto плана для чтения
+     */
     @Transactional
     public Optional<PlanReadDto> save(PlanSaveEditDto planDto) {
         Plan plan = toEntity(planDto);
@@ -104,6 +122,10 @@ public class PlanService {
                 .map(this::toDto);
     }
 
+    /**
+     * Удаление плана по id
+     * @param id id плана
+     */
     @Transactional
     public void delete(Long id) {
         var plan = planRedisRepository.findById(id);
@@ -126,10 +148,20 @@ public class PlanService {
         });
     }
 
+    /**
+     * Маппинг сущности на dto
+     * @param plan сущность
+     * @return dto для чтения
+     */
     private PlanReadDto toDto(Plan plan) {
         return planMapper.planToPlanReadDto(plan, workerMapper, productMapper);
     }
 
+    /**
+     * Маппинг dto на сущность
+     * @param plan dto для чтения
+     * @return сущность
+     */
     private Plan toEntity(PlanSaveEditDto plan) {
         return planMapper.planSaveEditDtoToPlan(plan, workerRepository, productRepository);
     }

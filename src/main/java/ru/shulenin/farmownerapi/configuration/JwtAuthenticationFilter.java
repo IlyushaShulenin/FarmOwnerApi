@@ -19,6 +19,9 @@ import ru.shulenin.farmownerapi.service.OwnerService;
 
 import java.io.IOException;
 
+/**
+ * Фильтр для запроса
+ */
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {

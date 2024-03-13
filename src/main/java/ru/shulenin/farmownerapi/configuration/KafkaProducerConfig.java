@@ -5,21 +5,15 @@ import org.apache.kafka.common.serialization.LongSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.annotation.Scope;
-import org.springframework.kafka.core.DefaultKafkaProducerFactory;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.core.ProducerFactory;
-import org.springframework.kafka.support.converter.StringJsonMessageConverter;
 import org.springframework.kafka.support.serializer.JsonSerializer;
-import ru.shulenin.farmownerapi.dto.AbstractDto;
-import ru.shulenin.farmownerapi.dto.WorkerSaveEditDto;
 
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Конфигурация продюсера для Kafka
+ */
 @Configuration
-//@PropertySource("classpath:kafka.properties")
 public class KafkaProducerConfig {
     @Value("${kafka.server}")
     private String kafkaServer;
@@ -36,17 +30,4 @@ public class KafkaProducerConfig {
         props.put(ProducerConfig.CLIENT_ID_CONFIG, kafkaProducerId);
         return props;
     }
-
-//    @Bean
-//    public ProducerFactory<Long, ? extends AbstractDto> producerStarshipFactory() {
-//        return new DefaultKafkaProducerFactory<>(producerConfigs());
-//    }
-//
-//    @Bean
-//    @Scope(value = "prototype")
-//    public KafkaTemplate<Long, ? extends AbstractDto> kafkaTemplate() {
-//        KafkaTemplate<Long, ? extends AbstractDto> template = new KafkaTemplate<>(producerStarshipFactory());
-//        template.setMessageConverter(new StringJsonMessageConverter());
-//        return template;
-//    }
 }

@@ -4,7 +4,6 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -16,6 +15,9 @@ import ru.shulenin.farmownerapi.service.WorkerService;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Контроллер для работы с рабочими
+ */
 @RestController
 @RequestMapping("/owner-api/v1/worker")
 @RequiredArgsConstructor
@@ -24,6 +26,10 @@ public class WorkerRestController {
 
     private final WorkerService workerService;
 
+    /**
+     * Получить всех рабочих
+     * @return список рабочих
+     */
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<WorkerReadDto> findAll() {
@@ -35,19 +41,26 @@ public class WorkerRestController {
         }
     }
 
+    /**
+     * Получить рабочего по id
+     * @param id id рабочего
+     * @return dto рабочего для чтения
+     */
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public WorkerReadDto findById(@PathVariable("id") Long id) {
         return workerService.findById(id)
-                .map(wrk -> {
-                    return wrk;
-                })
                 .orElseThrow(() -> {
                     log.warn(String.format("GET /owner-api/v1/worker/%d: there is no entity", id));
                     return new ResponseStatusException(HttpStatus.NOT_FOUND);
                 });
     }
 
+    /**
+     * Сохранение рабочего
+     * @param worker dto рабочего для сохранения
+     * @return
+     */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public WorkerReadDto save(@RequestBody @Valid WorkerSaveEditDto worker) {
@@ -55,6 +68,11 @@ public class WorkerRestController {
                 .get();
     }
 
+    /**
+     * Удаление рабочего по id
+     * @param id id рабочего
+     * @return true если рабочий успешно удален, иначе false
+     */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public boolean delete(@PathVariable("id") Long id)  {

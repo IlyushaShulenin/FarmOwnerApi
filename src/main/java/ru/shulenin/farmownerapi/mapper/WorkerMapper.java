@@ -8,11 +8,31 @@ import ru.shulenin.farmownerapi.dto.WorkerSaveEditDto;
 import ru.shulenin.farmownerapi.dto.WorkerSendDto;
 
 
+/**
+ * Маппер для рабочего
+ */
 @Mapper
 public interface WorkerMapper {
     WorkerMapper INSTANCE = Mappers.getMapper( WorkerMapper.class );
 
+    /**
+     * От сущности к dto для чтения
+     * @param worker сущность
+     * @return dto для чтения
+     */
     public WorkerReadDto workerToWorkerReadDto(Worker worker);
+
+    /**
+     * От сущности к сообщению
+     * @param worker сущность
+     * @return сообщение
+     */
     public WorkerSendDto workerToWorkerSendDto(Worker worker);
+
+    /**
+     * От dto для сохранения к сущности
+     * @param worker dto для сохранения
+     * @return сущность
+     */
     public Worker workerSaveEditdtoToWorker(WorkerSaveEditDto worker);
 }

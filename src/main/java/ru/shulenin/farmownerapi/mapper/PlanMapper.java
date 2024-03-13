@@ -12,15 +12,30 @@ import ru.shulenin.farmownerapi.dto.PlanReadDto;
 import ru.shulenin.farmownerapi.dto.PlanSaveEditDto;
 import ru.shulenin.farmownerapi.dto.PlanSendDto;
 
+/**
+ * Маппер для планов
+ */
 @Mapper
 public interface PlanMapper {
     PlanMapper INSTANCE = Mappers.getMapper( PlanMapper.class );
 
 
+    /**
+     * От сущность к сообщению
+     * @param plan сущность
+     * @return сообщение
+     */
     @Mapping(target = "workerId", source = "plan.worker.id")
     @Mapping(target = "productId", source = "plan.product.id")
     public PlanSendDto planToPlanSendDto(Plan plan);
 
+    /**
+     * От сущносоти к dto для чтения
+     * @param plan сущность
+     * @param workerMapper маппер для рабочих
+     * @param productMapper маппер для продуктов
+     * @return dto для чтения
+     */
      default public PlanReadDto planToPlanReadDto(Plan plan,
                                          WorkerMapper workerMapper,
                                          ProductMapper productMapper) {
@@ -35,6 +50,13 @@ public interface PlanMapper {
         );
     }
 
+    /**
+     * От dto для сохранения к сущность
+     * @param planDto dto для сохранения
+     * @param workerRepository репозиторий для рабочих
+     * @param productRepository репозиторий для продуктов
+     * @return
+     */
     @Transactional(readOnly = true)
     default public Plan planSaveEditDtoToPlan(PlanSaveEditDto planDto,
                                        WorkerRepository workerRepository,

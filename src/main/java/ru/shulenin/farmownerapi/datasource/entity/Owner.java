@@ -12,6 +12,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 
+/**
+ * Сущность владельца
+ */
 @Entity
 @Data
 @NoArgsConstructor

@@ -12,6 +12,9 @@ import ru.shulenin.farmownerapi.dto.JwtAuthenticationResponse;
 import ru.shulenin.farmownerapi.dto.SignInRequest;
 import ru.shulenin.farmownerapi.dto.SignUpRequest;
 
+/**
+ * Сервис для аутентификации
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j

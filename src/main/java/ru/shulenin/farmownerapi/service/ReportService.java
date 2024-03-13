@@ -24,6 +24,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Сервис для работы с отчетами
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -40,6 +43,11 @@ public class ReportService {
     private final WorkerMapper workerMapper = WorkerMapper.INSTANCE;
     private final ProductMapper productMapper = ProductMapper.INSTANCE;
 
+    /**
+     * Получить все отчеты
+     * @return список отчетов
+     * @throws ThereAreNotEntities
+     */
     public List<ReportReadDto> findAll() throws ThereAreNotEntities {
         if (reportRedisRepository.isEmpty()) {
             List<Report> reports = reportRepository.findAll();
@@ -58,6 +66,11 @@ public class ReportService {
                 .toList();
     }
 
+    /**
+     * Получить отчет по id
+     * @param id id отчета
+     * @return dto отчета для чтения
+     */
     public Optional<ReportReadDto> findById(Long id) {
         var report = reportRedisRepository.findById(id);
 
@@ -135,6 +148,11 @@ public class ReportService {
         return downcastToReport(queryResult);
     }
 
+    /**
+     * Привести Object к ProductivityReportWithDate или CommonProductivityReport
+     * @param queryResult
+     * @return
+     */
     private List<ProductivityReport> downcastToReport(List queryResult) {
         List<ProductivityReport> productivity = new ArrayList<>();
 
@@ -170,18 +188,13 @@ public class ReportService {
         return productivity;
     }
 
-    @Transactional
-    public void save(ReportReceiveDto reportDto) {
-        var report = toEntity(reportDto);
-        reportRepository.save(report);
-        log.info(String.format("ReportService.save: entity %s saved", report));
-    }
 
+    /**
+     * Маппинг сущности на dto для чтения
+     * @param report сущность
+     * @return dto для чтения
+     */
     private ReportReadDto toDto(Report report) {
         return reportMapper.reportToReportReadDto(report, workerMapper, productMapper);
-    }
-
-    private Report toEntity(ReportReceiveDto reportDto) {
-        return reportMapper.reportReceiveDtoToReport(reportDto, workerRepository, productRepository);
     }
 }

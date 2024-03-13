@@ -1,18 +1,18 @@
 package ru.shulenin.farmownerapi.service;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.shulenin.farmownerapi.datasource.entity.Score;
-import ru.shulenin.farmownerapi.datasource.entity.Worker;
 import ru.shulenin.farmownerapi.datasource.redis.repository.ScoreRedisRepository;
 import ru.shulenin.farmownerapi.datasource.repository.ScoreRepository;
 import ru.shulenin.farmownerapi.datasource.repository.WorkerRepository;
-import ru.shulenin.farmownerapi.dto.*;
+import ru.shulenin.farmownerapi.dto.ScoreReadDto;
+import ru.shulenin.farmownerapi.dto.ScoreSaveEditDto;
+import ru.shulenin.farmownerapi.dto.ScoreSendDto;
 import ru.shulenin.farmownerapi.exception.ThereAreNotEntities;
 import ru.shulenin.farmownerapi.mapper.ScoreMapper;
 import ru.shulenin.farmownerapi.mapper.WorkerMapper;
@@ -20,6 +20,9 @@ import ru.shulenin.farmownerapi.mapper.WorkerMapper;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Сервис для работы с баллами
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -33,11 +36,19 @@ public class ScoreService {
     private final ScoreMapper scoreMapper = ScoreMapper.INSTANCE;
     private final WorkerMapper workerMapper = WorkerMapper.INSTANCE;
 
+    /**
+     * Инициализация кжша
+     */
     @PostConstruct
     public void init() {
         scoreRedisRepository.clear();
     }
 
+    /**
+     * Получить все баллы
+     * @return список баллов
+     * @throws ThereAreNotEntities
+     */
     public List<ScoreReadDto> findAll() throws ThereAreNotEntities {
         if (scoreRedisRepository.isEmpty()) {
             List<Score> scores = scoreRepository.findAll();
@@ -56,6 +67,11 @@ public class ScoreService {
                 .toList();
     }
 
+    /**
+     * Получить баллы по id
+     * @param id id быллов
+     * @return dto баллов для чтения
+     */
     public Optional<ScoreReadDto> findById(Long id) {
         var score = scoreRedisRepository.findById(id);
 
@@ -77,6 +93,11 @@ public class ScoreService {
                 .map(this::toDto);
     }
 
+    /**
+     * Сохранить баллы
+     * @param scoreDto dto баллов для сохранения
+     * @return dto баллов для чтения
+     */
     @Transactional
     public Optional<ScoreReadDto> save(ScoreSaveEditDto scoreDto) {
         Score score = toEntity(scoreDto);
@@ -96,6 +117,10 @@ public class ScoreService {
                 .map(this::toDto);
     }
 
+    /**
+     * Удаление баллов по id
+     * @param id id баллов
+     */
     @Transactional
     public void delete(Long id) {
         var score = scoreRedisRepository.findById(id);
@@ -119,10 +144,20 @@ public class ScoreService {
         });
     }
 
+    /**
+     * Маппинг сущности на dto
+     * @param score сущность
+     * @return dto
+     */
     private ScoreReadDto toDto(Score score) {
         return scoreMapper.scoreToScoreReadDto(score, workerMapper);
     }
 
+    /**
+     * Маппинг dto на сущность
+     * @param scoreDto dto для сохранения
+     * @return сущность
+     */
     private Score toEntity(ScoreSaveEditDto scoreDto) {
         return scoreMapper.scoreSaveEditDtoToScore(scoreDto, workerRepository);
     }

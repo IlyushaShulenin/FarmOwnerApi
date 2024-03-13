@@ -18,6 +18,9 @@ import ru.shulenin.farmownerapi.dto.AbstractDto;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Конфигурация консьюмера для kafka
+ */
 @Configuration
 @PropertySource("classpath:kafka.properties")
 public class KafkaConsumerConfig {

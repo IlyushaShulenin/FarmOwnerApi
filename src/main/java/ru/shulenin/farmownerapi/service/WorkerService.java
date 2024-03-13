@@ -1,7 +1,6 @@
 package ru.shulenin.farmownerapi.service;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -10,13 +9,18 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.shulenin.farmownerapi.datasource.entity.Worker;
 import ru.shulenin.farmownerapi.datasource.redis.repository.WorkerRedisRepository;
 import ru.shulenin.farmownerapi.datasource.repository.WorkerRepository;
-import ru.shulenin.farmownerapi.dto.*;
+import ru.shulenin.farmownerapi.dto.WorkerReadDto;
+import ru.shulenin.farmownerapi.dto.WorkerSaveEditDto;
+import ru.shulenin.farmownerapi.dto.WorkerSendDto;
 import ru.shulenin.farmownerapi.exception.ThereAreNotEntities;
 import ru.shulenin.farmownerapi.mapper.WorkerMapper;
 
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Сурвис для работы с рабочими
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -27,11 +31,19 @@ public class WorkerService {
     private final WorkerRedisRepository workerRedisRepository;
     private final WorkerMapper workerMapper = WorkerMapper.INSTANCE;
 
+    /**
+     * Инициализация кэша
+     */
     @PostConstruct
     public void init() {
         workerRedisRepository.clear();
     }
 
+    /**
+     * Получить всех рабочих
+     * @return список рабочих
+     * @throws ThereAreNotEntities
+     */
     public List<WorkerReadDto> findAll() throws ThereAreNotEntities {
         if (workerRedisRepository.isEmpty()) {
             List<Worker> workers = workerRepository.findAll();
@@ -49,6 +61,11 @@ public class WorkerService {
                 .toList();
     }
 
+    /**
+     * Получить рабочего по id
+     * @param id id рабочгео
+     * @return dto рабочего для чтения
+     */
     public Optional<WorkerReadDto> findById(Long id) {
         var worker = workerRedisRepository.findById(id);
 
@@ -65,11 +82,15 @@ public class WorkerService {
                 return null;
             });
         }
-
         return worker
                 .map(workerMapper::workerToWorkerReadDto);
     }
 
+    /**
+     * Сохранить рабочего
+     * @param workerDto dto рабочгео для сохранения
+     * @return dto рабочего для чтения
+     */
     @Transactional
     public Optional<WorkerReadDto> save(WorkerSaveEditDto workerDto) {
         Worker worker = workerMapper.workerSaveEditdtoToWorker(workerDto);
@@ -89,6 +110,10 @@ public class WorkerService {
                 .map(workerMapper::workerToWorkerReadDto);
     }
 
+    /**
+     * Удалить рабочего по id
+     * @param id id рабочего
+     */
     @Transactional
     public void delete(Long id) {
         var worker = workerRedisRepository.findById(id);

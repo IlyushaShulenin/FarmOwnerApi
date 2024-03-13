@@ -3,17 +3,25 @@ package ru.shulenin.farmownerapi.mapper;
 import jakarta.persistence.EntityNotFoundException;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
-import ru.shulenin.farmownerapi.datasource.entity.Plan;
 import ru.shulenin.farmownerapi.datasource.entity.Score;
 import ru.shulenin.farmownerapi.datasource.repository.WorkerRepository;
 import ru.shulenin.farmownerapi.dto.ScoreReadDto;
 import ru.shulenin.farmownerapi.dto.ScoreSaveEditDto;
 import ru.shulenin.farmownerapi.dto.ScoreSendDto;
 
+/**
+ * Маппер для баллов
+ */
 @Mapper
 public interface ScoreMapper {
     ScoreMapper INSTANCE = Mappers.getMapper( ScoreMapper.class );
 
+    /**
+     * От сущности к dto для чтения
+     * @param score сущность
+     * @param workerMapper маппер для рабочих
+     * @return dto для чтения
+     */
     default public ScoreReadDto scoreToScoreReadDto(Score score, WorkerMapper workerMapper) {
         var worker = workerMapper.workerToWorkerReadDto(score.getWorker());
 
@@ -25,6 +33,12 @@ public interface ScoreMapper {
         );
     }
 
+    /**
+     * От dto для сохранения к сущности
+     * @param scoreDto  dto для сохранения
+     * @param workerRepository репозиторий для рабочих
+     * @return сущность
+     */
     default public Score scoreSaveEditDtoToScore(ScoreSaveEditDto scoreDto,
                                                  WorkerRepository workerRepository) {
         var worker = workerRepository.findById(scoreDto.getWorkerId());
@@ -41,5 +55,10 @@ public interface ScoreMapper {
         return score;
     }
 
+    /**
+     * От сущности к сообщению
+     * @param score сущность
+     * @return сообщение
+     */
     public ScoreSendDto scoreToScoreSendDto(Score score);
 }

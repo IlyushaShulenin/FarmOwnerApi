@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 import java.io.Serial;
 import java.io.Serializable;
 
+/**
+ * Сущность продукта
+ */
 @Entity
 @Data
 @AllArgsConstructor

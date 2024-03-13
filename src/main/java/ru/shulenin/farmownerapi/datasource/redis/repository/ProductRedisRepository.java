@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Redis репозиторий для работы с продуктами
+ */
 @Repository
 @RequiredArgsConstructor
 public class ProductRedisRepository implements RedisRepository<Product, Long> {
@@ -19,6 +22,10 @@ public class ProductRedisRepository implements RedisRepository<Product, Long> {
     private final RedisTemplate<String, Object> redisTemplate;
 
 
+    /**
+     * Получить все продукты
+     * @return список продуктов
+     */
     @Override
     public List<Product> findAll() {
         return redisTemplate.opsForHash().values(KEY)
@@ -27,17 +34,31 @@ public class ProductRedisRepository implements RedisRepository<Product, Long> {
                 .toList();
     }
 
+    /**
+     * Получить продукт по id
+     * @param id id продукта
+     * @return продукт
+     */
     @Override
     public Optional<Product> findById(Long id) {
         var product = (Product) redisTemplate.opsForHash().get(KEY, id);
         return Optional.ofNullable(product);
     }
 
+    /**
+     * Сохранить продукт
+     * @param entity сущность
+     */
     @Override
     public void save(Product entity) {
         redisTemplate.opsForHash().put(KEY, entity.getId(), entity);
     }
 
+    /**
+     * Сохранить список продуктов
+     * @param entities список продуктов
+     * @throws ThereAreNotEntities
+     */
     @Override
     public void saveAll(List<Product> entities) throws ThereAreNotEntities {
         if (entities.isEmpty())
@@ -51,17 +72,28 @@ public class ProductRedisRepository implements RedisRepository<Product, Long> {
         redisTemplate.opsForHash().putAll(KEY, entries);
     }
 
+    /**
+     * Удалить продукт по id
+     * @param id id продукта
+     */
     @Override
     public void delete(Long id) {
         redisTemplate.opsForHash().delete(KEY, id);
     }
 
+    /**
+     * Проверка кэша на пустоту
+     * @return true еслт пусто, иначе false
+     */
     @Override
     public boolean isEmpty() {
         var values = redisTemplate.opsForHash().values(KEY);
         return values.isEmpty();
     }
 
+    /**
+     * Очистка кэша
+     */
     @Override
     public void clear() {
         redisTemplate.delete(KEY);

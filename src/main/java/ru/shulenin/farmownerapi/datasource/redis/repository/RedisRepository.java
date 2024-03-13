@@ -1,7 +1,5 @@
 package ru.shulenin.farmownerapi.datasource.redis.repository;
 
-import ru.shulenin.farmownerapi.datasource.entity.Worker;
-
 import java.util.List;
 import java.util.Optional;
 

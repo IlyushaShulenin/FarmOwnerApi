@@ -4,6 +4,9 @@ import lombok.Data;
 
 import java.time.LocalDate;
 
+/**
+ * Отчет о месячной продуктивности рабочего
+ */
 @Data
 public class ProductivityReportWithDate extends ProductivityReport {
     private LocalDate date;

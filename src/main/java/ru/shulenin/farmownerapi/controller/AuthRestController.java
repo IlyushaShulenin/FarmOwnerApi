@@ -11,6 +11,9 @@ import ru.shulenin.farmownerapi.dto.SignInRequest;
 import ru.shulenin.farmownerapi.dto.SignUpRequest;
 import ru.shulenin.farmownerapi.service.AuthenticationService;
 
+/**
+ * Контроллер для аутентификации
+ */
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -22,6 +25,11 @@ public class AuthRestController {
         return authenticationService.signUp(request);
     }
 
+    /**
+     * Аутентификация владельца
+     * @param request dto для аутентификации
+     * @return JWT токен
+     */
     @PostMapping("/sign-in")
     public JwtAuthenticationResponse signIn(@RequestBody @Valid SignInRequest request) {
         return authenticationService.signIn(request);

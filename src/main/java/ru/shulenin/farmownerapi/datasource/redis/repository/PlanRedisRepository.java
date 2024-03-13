@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Redis репозиторий для работы с планами
+ */
 @Repository
 @RequiredArgsConstructor
 public class PlanRedisRepository implements RedisRepository<Plan, Long> {
@@ -19,6 +22,10 @@ public class PlanRedisRepository implements RedisRepository<Plan, Long> {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
+    /**
+     * Получить все планы
+     * @return список планов
+     */
     @Override
     public List<Plan> findAll() {
         return redisTemplate.opsForHash().values(KEY)
@@ -27,17 +34,31 @@ public class PlanRedisRepository implements RedisRepository<Plan, Long> {
                 .toList();
     }
 
+    /**
+     * Получить план по id
+     * @param id id плана
+     * @return план
+     */
     @Override
     public Optional<Plan> findById(Long id) {
         var plan = (Plan) redisTemplate.opsForHash().get(KEY, id);
         return Optional.ofNullable(plan);
     }
 
+    /**
+     * Сохранить план
+     * @param entity сущность
+     */
     @Override
     public void save(Plan entity) {
         redisTemplate.opsForHash().put(KEY, entity.getId(), entity);
     }
 
+    /**
+     * Сохранить список планов
+     * @param entities список планов
+     * @throws ThereAreNotEntities
+     */
     @Override
     public void saveAll(List<Plan> entities) throws ThereAreNotEntities {
         if (entities.isEmpty())
@@ -51,17 +72,29 @@ public class PlanRedisRepository implements RedisRepository<Plan, Long> {
         redisTemplate.opsForHash().putAll(KEY, entries);
     }
 
+    /**
+     * Удаление плана по id
+     * @param id id плана
+     */
     @Override
     public void delete(Long id) {
         redisTemplate.opsForHash().delete(KEY, id);
     }
 
+    /**
+     * Проверка кэшв на пустоту
+     * @return true если пусто, иначе false
+     */
     @Override
     public boolean isEmpty() {
         var values= redisTemplate.opsForHash().values(KEY);
         return values.isEmpty();
     }
 
+
+    /**
+     * Очистка кэша
+     */
     @Override
     public void clear() {
         redisTemplate.delete(KEY);

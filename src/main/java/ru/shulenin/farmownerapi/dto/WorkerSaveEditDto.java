@@ -5,8 +5,10 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Value;
 
+/**
+ * Dto рабочего для сохранения
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
