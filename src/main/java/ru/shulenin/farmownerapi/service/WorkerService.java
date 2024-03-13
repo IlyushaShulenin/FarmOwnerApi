@@ -1,6 +1,7 @@
 package ru.shulenin.farmownerapi.service;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -8,11 +9,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.shulenin.farmownerapi.datasource.entity.Worker;
 import ru.shulenin.farmownerapi.datasource.redis.repository.WorkerRedisRepository;
+import ru.shulenin.farmownerapi.datasource.repository.PlanRepository;
+import ru.shulenin.farmownerapi.datasource.repository.ScoreRepository;
 import ru.shulenin.farmownerapi.datasource.repository.WorkerRepository;
 import ru.shulenin.farmownerapi.dto.WorkerReadDto;
 import ru.shulenin.farmownerapi.dto.WorkerSaveEditDto;
 import ru.shulenin.farmownerapi.dto.WorkerSendDto;
-import ru.shulenin.farmownerapi.exception.ThereAreNotEntities;
 import ru.shulenin.farmownerapi.mapper.WorkerMapper;
 
 import java.util.List;
@@ -27,8 +29,12 @@ import java.util.Optional;
 @Slf4j
 public class WorkerService {
     private final WorkerRepository workerRepository;
-    private final KafkaTemplate<Long, WorkerSendDto> kafkaWorkerTemplate;
     private final WorkerRedisRepository workerRedisRepository;
+    private final ScoreRepository scoreRepository;
+    private final PlanRepository planRepository;
+
+    private final KafkaTemplate<Long, WorkerSendDto> kafkaWorkerTemplate;
+
     private final WorkerMapper workerMapper = WorkerMapper.INSTANCE;
 
     /**
@@ -36,25 +42,24 @@ public class WorkerService {
      */
     @PostConstruct
     public void init() {
+        workerRedisRepository.saveAll(workerRepository.findAll());
+        log.info("WorkerService.init: all entities saved to cash");
+    }
+
+    /**
+     * Очистка кэша
+     */
+    @PreDestroy
+    public void destroy() {
         workerRedisRepository.clear();
+        log.info("WorkerService.destroy: cache has been cleared");
     }
 
     /**
      * Получить всех рабочих
      * @return список рабочих
-     * @throws ThereAreNotEntities
      */
-    public List<WorkerReadDto> findAll() throws ThereAreNotEntities {
-        if (workerRedisRepository.isEmpty()) {
-            List<Worker> workers = workerRepository.findAll();
-            workerRedisRepository.saveAll(workers);
-            log.info("WorkerService.findAll: all entities saved to cash");
-
-            return workers.stream()
-                    .map(workerMapper::workerToWorkerReadDto)
-                    .toList();
-        }
-
+    public List<WorkerReadDto> findAll() {
         return workerRedisRepository.findAll()
                 .stream()
                 .map(workerMapper::workerToWorkerReadDto)
@@ -82,6 +87,7 @@ public class WorkerService {
                 return null;
             });
         }
+
         return worker
                 .map(workerMapper::workerToWorkerReadDto);
     }
@@ -93,7 +99,7 @@ public class WorkerService {
      */
     @Transactional
     public Optional<WorkerReadDto> save(WorkerSaveEditDto workerDto) {
-        Worker worker = workerMapper.workerSaveEditdtoToWorker(workerDto);
+        Worker worker = workerMapper.workerSaveEditDtoToWorker(workerDto);
 
         workerRepository.saveAndFlush(worker);
         log.info(String.format("WorkerService.save: entity %s saved", worker));
@@ -121,6 +127,8 @@ public class WorkerService {
         worker.map(wrk -> {
             var message = workerMapper.workerToWorkerSendDto(wrk);
             workerRepository.deleteById(id);
+            scoreRepository.deleteAllByWorkerId(id);
+            planRepository.deleteAllByWorkerId(id);
             workerRedisRepository.delete(id);
 
             log.info(String.format("WorkerService.delete: entity %s deleted", wrk));

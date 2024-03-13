@@ -1,6 +1,7 @@
 package ru.shulenin.farmownerapi.service;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -8,13 +9,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.shulenin.farmownerapi.datasource.entity.Plan;
 import ru.shulenin.farmownerapi.datasource.redis.repository.PlanRedisRepository;
+import ru.shulenin.farmownerapi.datasource.redis.repository.ProductRedisRepository;
+import ru.shulenin.farmownerapi.datasource.redis.repository.WorkerRedisRepository;
 import ru.shulenin.farmownerapi.datasource.repository.PlanRepository;
 import ru.shulenin.farmownerapi.datasource.repository.ProductRepository;
 import ru.shulenin.farmownerapi.datasource.repository.WorkerRepository;
 import ru.shulenin.farmownerapi.dto.PlanReadDto;
 import ru.shulenin.farmownerapi.dto.PlanSaveEditDto;
 import ru.shulenin.farmownerapi.dto.PlanSendDto;
-import ru.shulenin.farmownerapi.exception.ThereAreNotEntities;
 import ru.shulenin.farmownerapi.mapper.PlanMapper;
 import ru.shulenin.farmownerapi.mapper.ProductMapper;
 import ru.shulenin.farmownerapi.mapper.WorkerMapper;
@@ -31,8 +33,8 @@ import java.util.Optional;
 @Slf4j
 public class PlanService {
     private final PlanRepository planRepository;
-    private final WorkerRepository workerRepository;
-    private final ProductRepository productRepository;
+    private final WorkerRedisRepository workerRepository;
+    private final ProductRedisRepository productRepository;
     private final PlanRedisRepository planRedisRepository;
 
     private final KafkaTemplate<Long, PlanSendDto> kafkaPlanTemplate;
@@ -46,26 +48,24 @@ public class PlanService {
      */
     @PostConstruct
     public void init() {
+        planRedisRepository.saveAll(planRedisRepository.findAll());
+        log.info("WorkerService.init: all entities saved to cash");
+    }
+
+    /**
+     * Очистка кэша
+     */
+    @PreDestroy
+    public void destroy() {
         planRedisRepository.clear();
+        log.info("WorkerService.destroy: cache has been cleared");
     }
 
     /**
      * Получить все планы
      * @return список планов
-     * @throws ThereAreNotEntities
      */
-    public List<PlanReadDto> findAll() throws ThereAreNotEntities {
-        if (planRedisRepository.isEmpty()) {
-            List<Plan> plans = planRepository.findAll();
-            planRedisRepository.saveAll(plans);
-
-            log.info("PlanService.findAll: all entities saved to cash");
-
-            return plans.stream()
-                    .map(this::toDto)
-                    .toList();
-        }
-
+    public List<PlanReadDto> findAll() {
         return planRedisRepository.findAll()
                 .stream()
                 .map(this::toDto)

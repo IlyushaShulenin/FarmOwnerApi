@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 import ru.shulenin.farmownerapi.datasource.entity.Score;
-import ru.shulenin.farmownerapi.exception.ThereAreNotEntities;
 
 import java.util.HashMap;
 import java.util.List;
@@ -56,19 +55,17 @@ public class ScoreRedisRepository implements RedisRepository<Score, Long> {
     /**
      * Сохранить список баллов
      * @param entities список баллов
-     * @throws ThereAreNotEntities
      */
     @Override
-    public void saveAll(List<Score> entities) throws ThereAreNotEntities {
-        if (entities.isEmpty())
-            throw new ThereAreNotEntities("There are not workers");
+    public void saveAll(List<Score> entities) {
+        if (entities.isEmpty()) {
+            Map<Long, Score> entries = new HashMap<>();
 
-        Map<Long, Score> entries = new HashMap<>();
+            for (var entity : entities)
+                entries.put(entity.getId(), entity);
 
-        for (var entity : entities)
-            entries.put(entity.getId(), entity);
-
-        scoreRedisTemplate.opsForHash().putAll(KEY, entries);
+            scoreRedisTemplate.opsForHash().putAll(KEY, entries);
+        }
     }
 
     /**

@@ -1,6 +1,5 @@
 package ru.shulenin.farmownerapi.service;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -12,7 +11,6 @@ import ru.shulenin.farmownerapi.datasource.repository.ProductRepository;
 import ru.shulenin.farmownerapi.dto.ProductReadDto;
 import ru.shulenin.farmownerapi.dto.ProductSaveEditDto;
 import ru.shulenin.farmownerapi.dto.ProductSendDto;
-import ru.shulenin.farmownerapi.exception.ThereAreNotEntities;
 import ru.shulenin.farmownerapi.mapper.ProductMapper;
 
 import java.util.List;
@@ -27,35 +25,17 @@ import java.util.Optional;
 @Slf4j
 public class ProductService {
     private final ProductRepository productRepository;
-    private final KafkaTemplate<Long, ProductSendDto> kafkaProductTemplate;
     private final ProductRedisRepository productRedisRepository;
-    private final ProductMapper productMapper = ProductMapper.INSTANCE;
 
-    /**
-     * Инициализация кэша
-     */
-    @PostConstruct
-    public void init() {
-        productRedisRepository.clear();
-    }
+    private final KafkaTemplate<Long, ProductSendDto> kafkaProductTemplate;
+
+    private final ProductMapper productMapper = ProductMapper.INSTANCE;
 
     /**
      * Получить все продукты
      * @return список продуктов
-     * @throws ThereAreNotEntities
      */
-    public List<ProductReadDto> findAll() throws ThereAreNotEntities {
-        if (productRedisRepository.isEmpty()) {
-            List<Product> products = productRepository.findAll();
-            productRedisRepository.saveAll(products);
-
-            log.info("ProductService.findAll: all entities saved to cash");
-
-            return products.stream()
-                    .map(productMapper::productToReadDto)
-                    .toList();
-        }
-
+    public List<ProductReadDto> findAll() {
         return productRedisRepository.findAll()
                 .stream()
                 .map(productMapper::productToReadDto)

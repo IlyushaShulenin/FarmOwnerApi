@@ -4,4 +4,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import ru.shulenin.farmownerapi.datasource.entity.Score;
 
 public interface ScoreRepository extends JpaRepository<Score, Long> {
+    public void deleteAllByWorkerId(Long workerId);
 }

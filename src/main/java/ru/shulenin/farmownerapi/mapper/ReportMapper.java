@@ -1,10 +1,12 @@
 package ru.shulenin.farmownerapi.mapper;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 import ru.shulenin.farmownerapi.datasource.entity.Report;
+import ru.shulenin.farmownerapi.datasource.redis.repository.ProductRedisRepository;
+import ru.shulenin.farmownerapi.datasource.redis.repository.WorkerRedisRepository;
 import ru.shulenin.farmownerapi.datasource.repository.ProductRepository;
-import ru.shulenin.farmownerapi.datasource.repository.WorkerRepository;
 import ru.shulenin.farmownerapi.dto.ReportReadDto;
 import ru.shulenin.farmownerapi.dto.ReportReceiveDto;
 
@@ -23,19 +25,28 @@ public interface ReportMapper {
      * @param productRepository репозиторий для продуктов
      * @return сущность
      */
-    default public Report reportReceiveDtoToReport(ReportReceiveDto report, WorkerRepository workerRepository,
-                                                   ProductRepository productRepository) {
-        var worker = workerRepository.getReferenceById(report.getWorkerId());
-        var product = productRepository.getReferenceById(report.getProductId());
+    default public Report reportReceiveDtoToReport(ReportReceiveDto report, WorkerRedisRepository workerRepository,
+                                                   ProductRedisRepository productRepository) {
+        var worker = workerRepository.findById(report.getWorkerId());
+        var product = productRepository.findById(report.getProductId());
 
-        return new Report(
-                report.getId(),
-                worker,
-                product,
-                report.getAmount(),
-                report.getDate(),
-                report.getPlanIsCompleted()
-        );
+        var reportEntity = new Report();
+
+        worker.map(wrk -> {
+            reportEntity.setWorker(wrk);
+            return wrk;
+        }).orElseThrow(EntityNotFoundException::new);
+
+        product.map(prod -> {
+            reportEntity.setProduct(prod);
+            return prod;
+        }).orElseThrow(EntityNotFoundException::new);
+
+        reportEntity.setAmount(report.getAmount());
+        reportEntity.setDate(report.getDate());
+        reportEntity.setPlanIsCompleted(reportEntity.getPlanIsCompleted());
+
+        return reportEntity;
     }
 
     /**

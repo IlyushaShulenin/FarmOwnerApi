@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 import ru.shulenin.farmownerapi.datasource.entity.Plan;
-import ru.shulenin.farmownerapi.exception.ThereAreNotEntities;
 
 import java.util.HashMap;
 import java.util.List;
@@ -57,19 +56,17 @@ public class PlanRedisRepository implements RedisRepository<Plan, Long> {
     /**
      * Сохранить список планов
      * @param entities список планов
-     * @throws ThereAreNotEntities
      */
     @Override
-    public void saveAll(List<Plan> entities) throws ThereAreNotEntities {
-        if (entities.isEmpty())
-            throw new ThereAreNotEntities("There are not workers");
+    public void saveAll(List<Plan> entities) {
+        if (entities.isEmpty()) {
+            Map<Long, Plan> entries = new HashMap<>();
 
-        Map<Long, Plan> entries = new HashMap<>();
+            for (var entity : entities)
+                entries.put(entity.getId(), entity);
 
-        for (var entity : entities)
-            entries.put(entity.getId(), entity);
-
-        redisTemplate.opsForHash().putAll(KEY, entries);
+            redisTemplate.opsForHash().putAll(KEY, entries);
+        }
     }
 
     /**

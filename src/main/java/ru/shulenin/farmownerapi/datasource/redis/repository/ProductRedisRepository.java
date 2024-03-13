@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 import ru.shulenin.farmownerapi.datasource.entity.Product;
-import ru.shulenin.farmownerapi.exception.ThereAreNotEntities;
 
 import java.util.HashMap;
 import java.util.List;
@@ -57,19 +56,17 @@ public class ProductRedisRepository implements RedisRepository<Product, Long> {
     /**
      * Сохранить список продуктов
      * @param entities список продуктов
-     * @throws ThereAreNotEntities
      */
     @Override
-    public void saveAll(List<Product> entities) throws ThereAreNotEntities {
-        if (entities.isEmpty())
-            throw new ThereAreNotEntities("There are not products");
+    public void saveAll(List<Product> entities) {
+        if (entities.isEmpty()) {
+            Map<Long, Product> entries = new HashMap<>();
 
-        Map<Long, Product> entries = new HashMap<>();
+            for (var entity : entities)
+                entries.put(entity.getId(), entity);
 
-        for (var entity : entities)
-            entries.put(entity.getId(), entity);
-
-        redisTemplate.opsForHash().putAll(KEY, entries);
+            redisTemplate.opsForHash().putAll(KEY, entries);
+        }
     }
 
     /**

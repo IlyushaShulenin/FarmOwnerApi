@@ -1,6 +1,7 @@
 package ru.shulenin.farmownerapi.service;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -8,12 +9,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.shulenin.farmownerapi.datasource.entity.Score;
 import ru.shulenin.farmownerapi.datasource.redis.repository.ScoreRedisRepository;
+import ru.shulenin.farmownerapi.datasource.redis.repository.WorkerRedisRepository;
 import ru.shulenin.farmownerapi.datasource.repository.ScoreRepository;
 import ru.shulenin.farmownerapi.datasource.repository.WorkerRepository;
 import ru.shulenin.farmownerapi.dto.ScoreReadDto;
 import ru.shulenin.farmownerapi.dto.ScoreSaveEditDto;
 import ru.shulenin.farmownerapi.dto.ScoreSendDto;
-import ru.shulenin.farmownerapi.exception.ThereAreNotEntities;
 import ru.shulenin.farmownerapi.mapper.ScoreMapper;
 import ru.shulenin.farmownerapi.mapper.WorkerMapper;
 
@@ -29,38 +30,37 @@ import java.util.Optional;
 @Slf4j
 public class ScoreService {
     private final ScoreRepository scoreRepository;
-    private final KafkaTemplate<Long, ScoreSendDto> kafkaScoreTemplate;
     private final ScoreRedisRepository scoreRedisRepository;
-    private final WorkerRepository workerRepository;
+    private final WorkerRedisRepository workerRepository;
+
+    private final KafkaTemplate<Long, ScoreSendDto> kafkaScoreTemplate;
 
     private final ScoreMapper scoreMapper = ScoreMapper.INSTANCE;
     private final WorkerMapper workerMapper = WorkerMapper.INSTANCE;
 
     /**
-     * Инициализация кжша
+     * Инициализация кэша
      */
     @PostConstruct
     public void init() {
+        scoreRedisRepository.saveAll(scoreRepository.findAll());
+        log.info("WorkerService.init: all entities saved to cash");
+    }
+
+    /**
+     * Очистка кэша
+     */
+    @PreDestroy
+    public void destroy() {
         scoreRedisRepository.clear();
+        log.info("WorkerService.destroy: cache has been cleared");
     }
 
     /**
      * Получить все баллы
      * @return список баллов
-     * @throws ThereAreNotEntities
      */
-    public List<ScoreReadDto> findAll() throws ThereAreNotEntities {
-        if (scoreRedisRepository.isEmpty()) {
-            List<Score> scores = scoreRepository.findAll();
-            scoreRedisRepository.saveAll(scores);
-
-            log.info("ScoreService.findAll: all entities saved to cash");
-
-            return scores.stream()
-                    .map(this::toDto)
-                    .toList();
-        }
-
+    public List<ScoreReadDto> findAll() {
         return scoreRedisRepository.findAll()
                 .stream()
                 .map(this::toDto)

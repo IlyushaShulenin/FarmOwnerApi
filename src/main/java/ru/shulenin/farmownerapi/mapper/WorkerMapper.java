@@ -34,5 +34,5 @@ public interface WorkerMapper {
      * @param worker dto для сохранения
      * @return сущность
      */
-    public Worker workerSaveEditdtoToWorker(WorkerSaveEditDto worker);
+    public Worker workerSaveEditDtoToWorker(WorkerSaveEditDto worker);
 }

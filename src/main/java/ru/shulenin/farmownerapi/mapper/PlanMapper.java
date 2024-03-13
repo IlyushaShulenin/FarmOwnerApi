@@ -6,6 +6,8 @@ import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 import org.springframework.transaction.annotation.Transactional;
 import ru.shulenin.farmownerapi.datasource.entity.Plan;
+import ru.shulenin.farmownerapi.datasource.redis.repository.ProductRedisRepository;
+import ru.shulenin.farmownerapi.datasource.redis.repository.WorkerRedisRepository;
 import ru.shulenin.farmownerapi.datasource.repository.ProductRepository;
 import ru.shulenin.farmownerapi.datasource.repository.WorkerRepository;
 import ru.shulenin.farmownerapi.dto.PlanReadDto;
@@ -59,8 +61,8 @@ public interface PlanMapper {
      */
     @Transactional(readOnly = true)
     default public Plan planSaveEditDtoToPlan(PlanSaveEditDto planDto,
-                                       WorkerRepository workerRepository,
-                                       ProductRepository productRepository) {
+                                       WorkerRedisRepository workerRepository,
+                                       ProductRedisRepository productRepository) {
          var worker = workerRepository.findById(planDto.getWorkerId());
          var product = productRepository.findById(planDto.getProductId());
 

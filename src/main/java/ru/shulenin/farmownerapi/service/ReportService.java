@@ -8,12 +8,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.shulenin.farmownerapi.datasource.entity.Report;
+import ru.shulenin.farmownerapi.datasource.redis.repository.ProductRedisRepository;
 import ru.shulenin.farmownerapi.datasource.redis.repository.ReportRedisRepository;
+import ru.shulenin.farmownerapi.datasource.redis.repository.WorkerRedisRepository;
 import ru.shulenin.farmownerapi.datasource.repository.ProductRepository;
 import ru.shulenin.farmownerapi.datasource.repository.ReportRepository;
 import ru.shulenin.farmownerapi.datasource.repository.WorkerRepository;
 import ru.shulenin.farmownerapi.dto.*;
-import ru.shulenin.farmownerapi.exception.ThereAreNotEntities;
 import ru.shulenin.farmownerapi.mapper.ProductMapper;
 import ru.shulenin.farmownerapi.mapper.ReportMapper;
 import ru.shulenin.farmownerapi.mapper.WorkerMapper;
@@ -33,8 +34,8 @@ import java.util.Optional;
 @Slf4j
 public class ReportService {
     private final ReportRepository reportRepository;
-    private final WorkerRepository workerRepository;
-    private final ProductRepository productRepository;
+    private final WorkerRedisRepository workerRepository;
+    private final ProductRedisRepository productRepository;
     private final ReportRedisRepository reportRedisRepository;
 
     private final EntityManagerFactory entityManagerFactory;
@@ -46,9 +47,8 @@ public class ReportService {
     /**
      * Получить все отчеты
      * @return список отчетов
-     * @throws ThereAreNotEntities
      */
-    public List<ReportReadDto> findAll() throws ThereAreNotEntities {
+    public List<ReportReadDto> findAll() {
         if (reportRedisRepository.isEmpty()) {
             List<Report> reports = reportRepository.findAll();
             reportRedisRepository.saveAll(reports);
@@ -98,7 +98,7 @@ public class ReportService {
      * @return продуктивность рабочего
      */
     public List<ProductivityReport> getProductivityForWorker(Long workerId) {
-        if (!workerRepository.existsById(workerId)) {
+        if (!workerRepository.findById(workerId).isPresent()) {
             log.warn(String.format("PersonalInfoService.getProductivityForWorker: entity with id=% does not exist",
                     workerId));
             return Collections.emptyList();
@@ -126,7 +126,7 @@ public class ReportService {
      * @return продуктивность рабочего
      */
     public List<ProductivityReport> getProductivityForWorkerByMonth(Long workerId, Integer month) {
-        if (!workerRepository.existsById(workerId)) {
+        if (!workerRepository.findById(workerId).isPresent()) {
             log.warn(String.format("PersonalInfoService.getProductivityForWorker: entity with id=% does not exist",
                     workerId));
             return Collections.emptyList();
@@ -159,8 +159,8 @@ public class ReportService {
         for (var row : queryResult) {
             var obj = (Object[]) row;
 
-            var worker = workerRepository.getReferenceById((Long) obj[0]);
-            var product = productRepository.getReferenceById((Long) obj[1]);
+            var worker = workerRepository.findById((Long) obj[0]).get();
+            var product = productRepository.findById((Long) obj[1]).get();
             var reportAmount = (Double) obj[2];
             var planAmount = (Double) obj[3];
 
@@ -188,6 +188,25 @@ public class ReportService {
         return productivity;
     }
 
+    /**
+     * Сохранить отчет
+     * @param reportDto dto для получения сообщения
+     * @return dto отчета для чтения
+     */
+    @Transactional
+    public Optional<ReportReadDto> save(ReportReceiveDto reportDto) {
+        var report = toEntity(reportDto);
+
+        reportRepository.saveAndFlush(report);
+        log.info(String.format("ReportService.save: entity: %s saved", report));
+
+        reportRedisRepository.save(report);
+        log.info(String.format("ReportService.save: entity %s saved to cache", report));
+
+
+        return Optional.of(report)
+                .map(this::toDto);
+    }
 
     /**
      * Маппинг сущности на dto для чтения
@@ -196,5 +215,14 @@ public class ReportService {
      */
     private ReportReadDto toDto(Report report) {
         return reportMapper.reportToReportReadDto(report, workerMapper, productMapper);
+    }
+
+    /**
+     * Маппинг dto на сущность
+     * @param reportDto dto
+     * @return сущность
+     */
+    private Report toEntity(ReportReceiveDto reportDto) {
+        return reportMapper.reportReceiveDtoToReport(reportDto, workerRepository, productRepository);
     }
 }

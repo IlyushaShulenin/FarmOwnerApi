@@ -10,7 +10,7 @@ public interface RedisRepository<E, K> {
 
     public void save(E entity);
 
-    public void saveAll(List<E> entities) throws Exception;
+    public void saveAll(List<E> entities);
 
     public void delete(K id);
 

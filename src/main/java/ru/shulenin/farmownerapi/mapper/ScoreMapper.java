@@ -4,7 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 import ru.shulenin.farmownerapi.datasource.entity.Score;
-import ru.shulenin.farmownerapi.datasource.repository.WorkerRepository;
+import ru.shulenin.farmownerapi.datasource.redis.repository.WorkerRedisRepository;
 import ru.shulenin.farmownerapi.dto.ScoreReadDto;
 import ru.shulenin.farmownerapi.dto.ScoreSaveEditDto;
 import ru.shulenin.farmownerapi.dto.ScoreSendDto;
@@ -40,7 +40,7 @@ public interface ScoreMapper {
      * @return сущность
      */
     default public Score scoreSaveEditDtoToScore(ScoreSaveEditDto scoreDto,
-                                                 WorkerRepository workerRepository) {
+                                                 WorkerRedisRepository workerRepository) {
         var worker = workerRepository.findById(scoreDto.getWorkerId());
         var score = new Score();
 
