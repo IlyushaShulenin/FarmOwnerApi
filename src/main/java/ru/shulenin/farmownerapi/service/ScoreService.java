@@ -43,7 +43,7 @@ public class ScoreService {
             List<Score> scores = scoreRepository.findAll();
             scoreRedisRepository.saveAll(scores);
 
-            log.info("ScoreService.findAll(): all entities fetch to cash");
+            log.info("ScoreService.findAll: all entities saved to cash");
 
             return scores.stream()
                     .map(this::toDto)
@@ -64,12 +64,12 @@ public class ScoreService {
 
             score.map(scr -> {
                 scoreRedisRepository.save(scr);
-                log.info(String.format("ScoreService.findById(): Score(%s) fetched to cache", scr));
+                log.info(String.format("ScoreService.findById: entity %s saved to cache", scr));
 
                 return scr;
-            }).orElseThrow(() -> {
-                log.warn(String.format("WorkerService.findById(): worker(id=%d) does not exist", id));
-                return new EntityNotFoundException();
+            }).orElseGet(() -> {
+                log.warn(String.format("ScoreService.findById: entity with id=%d does not exist", id));
+                return null;
             });
         }
 
@@ -82,15 +82,15 @@ public class ScoreService {
         Score score = toEntity(scoreDto);
 
         scoreRepository.saveAndFlush(score);
-        log.info(String.format("Save entity: %s", score));
+        log.info(String.format("WorkerService.save: entity %s saved", score));
 
         scoreRedisRepository.save(score);
-        log.info(String.format("ScoreService.save(): %s saved to cache", score));
+        log.info(String.format("ScoreService.save: %s saved to cache", score));
 
         var message = scoreMapper.scoreToScoreSendDto(score);
 
         kafkaScoreTemplate.send("score.save", message);
-        log.info(String.format("Message sent %s", message));
+        log.info(String.format("ScoreService.save: message %s sent", message));
 
         return Optional.of(score)
                 .map(this::toDto);
@@ -106,16 +106,16 @@ public class ScoreService {
             scoreRepository.deleteById(id);
             scoreRedisRepository.delete(id);
 
-            log.info(String.format("ScoreService.delete(): entity(%s) deleted", scr));
-            log.info(String.format("ScoreService.delete(): entity(%s) deleted from cache", scr));
+            log.info(String.format("ScoreService.delete: entity %s deleted", scr));
+            log.info(String.format("ScoreService.delete: entity %s deleted from cache", scr));
 
             kafkaScoreTemplate.send("score.delete", message);
             log.info(String.format("send: message(%s) sent", message));
 
             return scr;
-        }).orElseThrow(() -> {
-            log.warn(String.format("delete: entity(id=%d) not found", id));
-            return new EntityNotFoundException();
+        }).orElseGet(() -> {
+            log.warn(String.format("ScoreService.delete: entity id=%d not found", id));
+            return null;
         });
     }
 

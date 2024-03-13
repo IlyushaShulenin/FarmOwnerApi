@@ -11,3 +11,7 @@ INSERT INTO worker (email, name, surname)  VALUES ('tacker@mainl.com', 'Tacker',
 INSERT INTO product (name, measure)  VALUES ('Milk', 'LITER');
 INSERT INTO product (name, measure)  VALUES ('Eggs', 'UNIT');
 INSERT INTO product (name, measure)  VALUES ('Apples', 'KG');
+INSERT INTO product (name, measure)  VALUES ('Strawberry', 'KG');
+INSERT INTO product (name, measure)  VALUES ('Peaches', 'KG');
+INSERT INTO product (name, measure)  VALUES ('Seed', 'KG');
+

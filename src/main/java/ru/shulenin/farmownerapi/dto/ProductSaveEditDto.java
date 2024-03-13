@@ -12,10 +12,10 @@ import ru.shulenin.farmownerapi.datasource.entity.Product;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProductSaveEditDto extends AbstractDto {
-    @NotBlank
+    @NotBlank(message = "product name is required field and can not be empty")
     private String name;
 
     @Enumerated(EnumType.STRING)
-    @NotBlank
+    @NotBlank(message = "product measure is required field and can not be empty")
     private Product.Measure measure;
 }

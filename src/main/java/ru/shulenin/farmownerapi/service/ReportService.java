@@ -12,15 +12,15 @@ import ru.shulenin.farmownerapi.datasource.redis.repository.ReportRedisRepositor
 import ru.shulenin.farmownerapi.datasource.repository.ProductRepository;
 import ru.shulenin.farmownerapi.datasource.repository.ReportRepository;
 import ru.shulenin.farmownerapi.datasource.repository.WorkerRepository;
-import ru.shulenin.farmownerapi.dto.ProductReport;
-import ru.shulenin.farmownerapi.dto.ReportReadDto;
-import ru.shulenin.farmownerapi.dto.ReportReceiveDto;
+import ru.shulenin.farmownerapi.dto.*;
 import ru.shulenin.farmownerapi.exception.ThereAreNotEntities;
 import ru.shulenin.farmownerapi.mapper.ProductMapper;
 import ru.shulenin.farmownerapi.mapper.ReportMapper;
 import ru.shulenin.farmownerapi.mapper.WorkerMapper;
 
+import java.sql.Date;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,7 +45,7 @@ public class ReportService {
             List<Report> reports = reportRepository.findAll();
             reportRedisRepository.saveAll(reports);
 
-            log.info("ReportService.findAll(): all entities fetch to cash");
+            log.info("ReportService.findAll: all entities saved to cash");
 
             return reports.stream()
                     .map(this::toDto)
@@ -66,11 +66,11 @@ public class ReportService {
 
             report.map(rpt -> {
                 reportRedisRepository.save(rpt);
-                log.info(String.format("ReportService.findById(): Plan(%s) fetched to cache", rpt));
+                log.info(String.format("ReportService.findById: entity %s saved to cache", rpt));
 
                 return rpt;
             }).orElseThrow(() -> {
-                log.warn(String.format("ReportService.findById(): Plan(id=%d) does not exist", id));
+                log.warn(String.format("ReportService.findById: entity id=%d does not exist", id));
                 return new EntityNotFoundException();
             });
         }
@@ -79,37 +79,102 @@ public class ReportService {
                 .map(this::toDto);
     }
 
-    public List getProductReport() {
+    /**
+     * получение информации о продуктивности рабочего
+     * @param workerId id рабочего
+     * @return продуктивность рабочего
+     */
+    public List<ProductivityReport> getProductivityForWorker(Long workerId) {
+        if (!workerRepository.existsById(workerId)) {
+            log.warn(String.format("PersonalInfoService.getProductivityForWorker: entity with id=% does not exist",
+                    workerId));
+            return Collections.emptyList();
+        }
+
         EntityManager entityManager = entityManagerFactory.createEntityManager();
 
         var queryResult = entityManager.createNativeQuery(
-                "SELECT r.product_id, SUM(r.amount), q.s " +
-                "FROM report AS r JOIN (SELECT p.product_ID, SUM(p.amount) AS s FROM plan AS p GROUP BY P.product_id) AS q " +
-                "ON r.product_id = q.product_id " +
-                "GROUP BY r.product_id, q.s;")
+                        "SELECT t.worker_id, t.product_id, SUM(t.r_amount), SUM(t.p_amount) FROM " +
+                                "(SELECT r.worker_id, r.product_id, r.amount AS r_amount, p.amount AS p_amount " +
+                                "FROM report AS r JOIN plan AS p " +
+                                "ON r.worker_id = p.worker_id AND r.product_id = p.product_id AND p.date = r.date) AS t " +
+                                "GROUP BY t.worker_id, t.product_id " +
+                                "HAVING t.worker_id = :id")
+                .setParameter("id", workerId)
                 .getResultList();
 
-        return queryResult;
+        return downcastToReport(queryResult);
     }
 
-    public List GetProductivity() {
+    /**
+     * получение информации о продуктивности рабочего по месяцам
+     * @param workerId id рабочего
+     * @param month месяц
+     * @return продуктивность рабочего
+     */
+    public List<ProductivityReport> getProductivityForWorkerByMonth(Long workerId, Integer month) {
+        if (!workerRepository.existsById(workerId)) {
+            log.warn(String.format("PersonalInfoService.getProductivityForWorker: entity with id=% does not exist",
+                    workerId));
+            return Collections.emptyList();
+        }
+
         EntityManager entityManager = entityManagerFactory.createEntityManager();
 
         var queryResult = entityManager.createNativeQuery(
-                "SELECT r.worker_id, r.product_id, SUM(r.amount), q.s " +
-                "FROM report AS r JOIN (SELECT p.product_ID, SUM(p.amount) AS s FROM plan AS p " +
-                "GROUP BY P.product_id) AS q " +
-                "ON r.product_id = q.product_id " +
-                "GROUP BY r.worker_id,r.product_id, q.s;")
+                        "SELECT t.worker_id, t.product_id, SUM(t.r_amount), SUM(t.p_amount), t.r_date FROM " +
+                                "(SELECT r.worker_id, r.product_id, r.date AS r_date, r.amount AS r_amount, p.amount AS p_amount " +
+                                "FROM report AS r JOIN plan AS p " +
+                                "ON r.worker_id = p.worker_id AND r.product_id = p.product_id AND p.date = r.date) AS t " +
+                                "GROUP BY t.worker_id, t.product_id, t.r_date " +
+                                "HAVING t.worker_id = :id AND EXTRACT(MONTH from t.r_date) = :month")
+                .setParameter("id", workerId)
+                .setParameter("month", month)
                 .getResultList();
 
-        return queryResult;
+        return downcastToReport(queryResult);
+    }
+
+    private List<ProductivityReport> downcastToReport(List queryResult) {
+        List<ProductivityReport> productivity = new ArrayList<>();
+
+        for (var row : queryResult) {
+            var obj = (Object[]) row;
+
+            var worker = workerRepository.getReferenceById((Long) obj[0]);
+            var product = productRepository.getReferenceById((Long) obj[1]);
+            var reportAmount = (Double) obj[2];
+            var planAmount = (Double) obj[3];
+
+            if (obj.length == 5) {
+                var date = (Date) obj[4];
+
+                productivity.add(new ProductivityReportWithDate(
+                        workerMapper.workerToWorkerReadDto(worker),
+                        productMapper.productToReadDto(product),
+                        reportAmount,
+                        planAmount,
+                        date.toLocalDate()
+                ));
+            }
+            else {
+                productivity.add(new CommonProductivityReport(
+                        workerMapper.workerToWorkerReadDto(worker),
+                        productMapper.productToReadDto(product),
+                        reportAmount,
+                        planAmount
+                ));
+            }
+        }
+
+        return productivity;
     }
 
     @Transactional
     public void save(ReportReceiveDto reportDto) {
         var report = toEntity(reportDto);
         reportRepository.save(report);
+        log.info(String.format("ReportService.save: entity %s saved", report));
     }
 
     private ReportReadDto toDto(Report report) {

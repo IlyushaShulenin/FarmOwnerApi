@@ -11,12 +11,13 @@ import lombok.Value;
 @AllArgsConstructor
 @NoArgsConstructor
 public class WorkerSaveEditDto extends AbstractDto {
-    @Email
+    @NotBlank(message = "email is required field and can not be empty")
+    @Email(message = "email should look like user@somemail.com")
     private String email;
 
-    @NotBlank
+    @NotBlank(message = "name is required field and can not be empty")
     private String name;
 
-    @NotBlank
+    @NotBlank(message = "surname is required filed and can not be empty")
     private String surname;
 }

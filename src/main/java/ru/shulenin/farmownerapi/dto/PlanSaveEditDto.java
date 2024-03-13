@@ -14,15 +14,15 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PlanSaveEditDto extends AbstractDto {
-    @Positive
+    @Positive(message = "workerId must be positive")
     private Long workerId;
 
-    @Positive
+    @Positive(message = "productId must be positive")
     private Long productId;
 
-    @Positive
+    @Positive(message = "amount must be positive")
     private Integer amount;
 
-    @PastOrPresent
+    @PastOrPresent(message ="date can not be a future")
     private LocalDate date;
 }

@@ -36,8 +36,7 @@ public class WorkerService {
         if (workerRedisRepository.isEmpty()) {
             List<Worker> workers = workerRepository.findAll();
             workerRedisRepository.saveAll(workers);
-
-            log.info("WorkerService.findAll(): all entities fetch to cash");
+            log.info("WorkerService.findAll: all entities saved to cash");
 
             return workers.stream()
                     .map(workerMapper::workerToWorkerReadDto)
@@ -58,13 +57,12 @@ public class WorkerService {
 
             worker.map(wrk -> {
                 workerRedisRepository.save(wrk);
-
-                log.info(String.format("WorkerService.findById(): Worker(%s) fetched to cache", wrk));
+                log.info(String.format("WorkerService.findById: entity %s saved to cache", wrk));
 
                 return wrk;
-            }).orElseThrow(() -> {
-                log.warn(String.format("WorkerService.findById(): worker(id=%d) does not exist", id));
-                return new EntityNotFoundException();
+            }).orElseGet(() -> {
+                log.warn(String.format("WorkerService.findById: entity with id=%d does not exist", id));
+                return null;
             });
         }
 
@@ -77,15 +75,15 @@ public class WorkerService {
         Worker worker = workerMapper.workerSaveEditdtoToWorker(workerDto);
 
         workerRepository.saveAndFlush(worker);
-        log.info(String.format("Save entity: %s", worker));
+        log.info(String.format("WorkerService.save: entity %s saved", worker));
 
         workerRedisRepository.save(worker);
-        log.info(String.format("WorkerService.save(): %s saved to cache", worker));
+        log.info(String.format("WorkerService.save: %s saved to cache", worker));
 
         var message = workerMapper.workerToWorkerSendDto(worker);
 
         kafkaWorkerTemplate.send("worker.save", message);
-        log.info(String.format("Message sent %s", message));
+        log.info(String.format("WorkerService.save: message %s sent", message));
 
         return Optional.of(worker)
                 .map(workerMapper::workerToWorkerReadDto);
@@ -100,17 +98,16 @@ public class WorkerService {
             workerRepository.deleteById(id);
             workerRedisRepository.delete(id);
 
-            log.info(String.format("WorkerService.delete(): entity(%s) deleted", wrk));
-            log.info(String.format("WorkerService.delete(): entity(%s) deleted from cache", wrk));
+            log.info(String.format("WorkerService.delete: entity %s deleted", wrk));
+            log.info(String.format("WorkerService.delete: entity %s deleted from cache", wrk));
 
             kafkaWorkerTemplate.send("worker.delete", message);
-
-            log.info(String.format("send: message(%s) sent", message));
+            log.info(String.format("WorkerService.delete: message %s sent", message));
 
             return wrk;
-        }).orElseThrow(() -> {
-            log.warn(String.format("delete: entity(id=%d) not found", id));
-            return new EntityNotFoundException();
+        }).orElseGet(() -> {
+            log.warn(String.format("WorkerService.save: entity with id=%d not found", id));
+            return null;
         });
     }
 }

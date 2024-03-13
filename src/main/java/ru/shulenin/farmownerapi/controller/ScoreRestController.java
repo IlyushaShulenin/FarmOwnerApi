@@ -1,6 +1,7 @@
 package ru.shulenin.farmownerapi.controller;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.internal.util.privilegedactions.IsClassPresent;
@@ -39,12 +40,15 @@ public class ScoreRestController {
     @ResponseStatus(HttpStatus.OK)
     public ScoreReadDto findById(@PathVariable("id") Long id) {
         return scoreService.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> {
+                    log.warn(String.format("GET /owner-api/v1/score/%d: there is no entity", id));
+                    return new ResponseStatusException(HttpStatus.NOT_FOUND);
+                });
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ScoreReadDto save(@RequestBody ScoreSaveEditDto worker) {
+    public ScoreReadDto save(@RequestBody @Valid ScoreSaveEditDto worker) {
         return scoreService.save(worker)
                 .get();
     }
@@ -56,7 +60,7 @@ public class ScoreRestController {
             scoreService.delete(id);
             return true;
         } catch (EntityNotFoundException e) {
-            log.warn(String.format("ScoreRestController.delete(): score with id=%d does not exist", id));
+            log.warn(String.format("DELETE /owner-api/v1/score/%d: there is no entity", id));
             return false;
         }
     }

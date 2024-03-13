@@ -1,6 +1,7 @@
 package ru.shulenin.farmownerapi.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -13,6 +14,7 @@ import ru.shulenin.farmownerapi.dto.SignUpRequest;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthenticationService {
     private final OwnerService ownerService;
     private final JwtService jwtService;
@@ -27,15 +29,18 @@ public class AuthenticationService {
      */
     @Transactional
     public JwtAuthenticationResponse signUp(SignUpRequest request) {
-
-        var user = new Owner(2,
-                request.getEmail(),
+        var email = request.getEmail();
+        var user = new Owner(
+                email,
                 passwordEncoder.encode(request.getPassword())
                );
 
         ownerService.create(user);
+        log.info(String.format("User %s created", email));
 
         var jwt = jwtService.generateToken(user);
+        log.info(String.format("Token for %s created", email));
+
         return new JwtAuthenticationResponse(jwt);
     }
 
@@ -46,15 +51,18 @@ public class AuthenticationService {
      * @return токен
      */
     public JwtAuthenticationResponse signIn(SignInRequest request) {
+        var email = request.getEmail();
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                request.getEmail(),
+                email,
                 request.getPassword()
         ));
+        log.info(String.format("User %s authenticated", email));
 
         var owner = ownerService
-                .loadUserByUsername(request.getEmail());
+                .loadUserByUsername(email);
 
         var jwt = jwtService.generateToken(owner);
+        log.info(String.format("Token for %s created", email));
 
         return new JwtAuthenticationResponse(jwt);
     }

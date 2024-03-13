@@ -51,7 +51,7 @@ public class PlanService {
             List<Plan> plans = planRepository.findAll();
             planRedisRepository.saveAll(plans);
 
-            log.info("PlanService.findAll(): all entities fetch to cash");
+            log.info("PlanService.findAll: all entities saved to cash");
 
             return plans.stream()
                     .map(this::toDto)
@@ -72,12 +72,12 @@ public class PlanService {
 
             plan.map(pln -> {
                 planRedisRepository.save(pln);
-                log.info(String.format("PlanService.findById(): Plan(%s) fetched to cache", pln));
+                log.info(String.format("PlanService.findById: entity %s saved to cache", pln));
 
                 return pln;
-            }).orElseThrow(() -> {
-                log.warn(String.format("PlanService.findById(): Plan(id=%d) does not exist", id));
-                return new EntityNotFoundException();
+            }).orElseGet(() -> {
+                log.warn(String.format("PlanService.findById: entity with id=%d does not exist", id));
+                return null;
             });
         }
 
@@ -90,15 +90,15 @@ public class PlanService {
         Plan plan = toEntity(planDto);
 
         planRepository.saveAndFlush(plan);
-        log.info(String.format("Save entity: %s", plan));
+        log.info(String.format("PlanService.save: entity %s saved", plan));
 
         planRedisRepository.save(plan);
-        log.info(String.format("PlanService.save(): %s saved to cache", plan));
+        log.info(String.format("PlanService.save: entity %s saved to cache", plan));
 
         var message = planMapper.planToPlanSendDto(plan);
 
         kafkaPlanTemplate.send("plan.save", message);
-        log.info(String.format("Message sent %s", message));
+        log.info(String.format("PlanService.save: message %s sent", message));
 
         return Optional.of(plan)
                 .map(this::toDto);
@@ -113,17 +113,16 @@ public class PlanService {
             planRepository.deleteById(id);
             planRedisRepository.delete(id);
 
-            log.info(String.format("PlanService.delete(): entity(%s) deleted", pln));
-            log.info(String.format("PlanService.delete(): entity(%s) deleted from cache", pln));
+            log.info(String.format("PlanService.delete: entity %s deleted", pln));
+            log.info(String.format("PlanService.delete: entity %s deleted from cache", pln));
 
             kafkaPlanTemplate.send("plan.delete", message);
-
             log.info(String.format("send: message(%s) sent", message));
 
             return pln;
-        }).orElseThrow(() -> {
-            log.warn(String.format("delete: entity(id=%d) not found", id));
-            return new EntityNotFoundException();
+        }).orElseGet(() -> {
+            log.warn(String.format("PlanService.delete: entity id=%d not found", id));
+            return null;
         });
     }
 

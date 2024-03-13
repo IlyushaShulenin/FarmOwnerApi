@@ -42,7 +42,7 @@ public class ProductService {
             List<Product> products = productRepository.findAll();
             productRedisRepository.saveAll(products);
 
-            log.info("WorkerService.findAll(): all entities fetch to cash");
+            log.info("ProductService.findAll: all entities saved to cash");
 
             return products.stream()
                     .map(productMapper::productToReadDto)
@@ -64,12 +64,12 @@ public class ProductService {
             product.map(prod -> {
                 productRedisRepository.save(prod);
 
-                log.info(String.format("ProductService.findById(): Product(%s) fetched to cache", prod));
+                log.info(String.format("ProductService.findById: entity %s saved to cache", prod));
 
                 return prod;
-            }).orElseThrow(() -> {
-                log.warn(String.format("ProductService.findById(): Product(id=%d) does not exist", id));
-                return new EntityNotFoundException();
+            }).orElseGet(() -> {
+                log.warn(String.format("ProductService.findById: entity with id=%d does not exist", id));
+                return null;
             });
         }
 
@@ -82,15 +82,15 @@ public class ProductService {
         Product product = productMapper.productSaveEditDtoToProduct(productDto);
 
         productRepository.saveAndFlush(product);
-        log.info(String.format("ProductService.save(): Save entity: %s", product));
+        log.info(String.format("ProductService.save: entity: %s saved", product));
 
         productRedisRepository.save(product);
-        log.info(String.format("ProductService.save(): %s saved to cache", product));
+        log.info(String.format("ProductService.save: entity %s saved to cache", product));
 
         var message = productMapper.productToSendDto(product);
 
         kafkaProductTemplate.send("product.save", message);
-        log.info(String.format("ProductService.save(): Message sent %s", message));
+        log.info(String.format("ProductService.save: message %s sent", message));
 
         return Optional.of(product)
                 .map(productMapper::productToReadDto);
@@ -105,17 +105,16 @@ public class ProductService {
             productRepository.deleteById(id);
             productRedisRepository.delete(id);
 
-            log.info(String.format("ProductService.delete(): entity(%s) deleted", prod));
-            log.info(String.format("ProductService.delete(): entity(%s) deleted from cache", prod));
+            log.info(String.format("ProductService.delete: entity %s deleted", prod));
+            log.info(String.format("ProductService.delete: entity %s deleted from cache", prod));
 
             kafkaProductTemplate.send("product.delete", message);
-
-            log.info(String.format("send: message(%s) sent", message));
+            log.info(String.format("ProductService.delete: message %s sent", message));
 
             return prod;
-        }).orElseThrow(() -> {
-            log.warn(String.format("delete: entity(id=%d) not found", id));
-            return new EntityNotFoundException();
+        }).orElseGet(() -> {
+            log.warn(String.format("ProductService.delete: entity with id=%d not found", id));
+            return null;
         });
     }
 }

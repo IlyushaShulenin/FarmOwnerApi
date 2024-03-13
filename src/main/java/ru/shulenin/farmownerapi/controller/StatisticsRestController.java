@@ -2,11 +2,9 @@ package ru.shulenin.farmownerapi.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.shulenin.farmownerapi.dto.ProductReport;
+import ru.shulenin.farmownerapi.dto.ProductivityReport;
 import ru.shulenin.farmownerapi.service.ReportService;
 
 import java.util.List;
@@ -17,9 +15,18 @@ import java.util.List;
 public class StatisticsRestController {
     private final ReportService reportService;
 
-    @GetMapping
+    /**
+     * Результаты выработки рабочего(данные об объеме проведенной работы в сравнении с планами)
+     * @param id id рабочего
+     * @param month месяц
+     * @return результаты выработки
+     */
+    @GetMapping("/productivity/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public List<ProductReport> findAll() {
-        return reportService.getProductReport();
+    public List<ProductivityReport> getProductivity(@PathVariable("id") Long id,
+                                                    @RequestParam(value = "month", required = false) Integer month) {
+        if (month == null)
+            return reportService.getProductivityForWorker(id);
+        return reportService.getProductivityForWorkerByMonth(id, month);
     }
 }

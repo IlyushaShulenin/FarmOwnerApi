@@ -1,6 +1,7 @@
 package ru.shulenin.farmownerapi.controller;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,7 @@ public class WorkerRestController {
         try {
             return workerService.findAll();
         } catch (ThereAreNotEntities e) {
-            log.warn("GET /api/v1/worker: there are not entities");
+            log.warn("GET /owner-api/v1/worker: there are no entities");
             return Collections.emptyList();
         }
     }
@@ -38,24 +39,30 @@ public class WorkerRestController {
     @ResponseStatus(HttpStatus.OK)
     public WorkerReadDto findById(@PathVariable("id") Long id) {
         return workerService.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .map(wrk -> {
+                    return wrk;
+                })
+                .orElseThrow(() -> {
+                    log.warn(String.format("GET /owner-api/v1/worker/%d: there is no entity", id));
+                    return new ResponseStatusException(HttpStatus.NOT_FOUND);
+                });
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public WorkerReadDto save(@RequestBody WorkerSaveEditDto worker) {
+    public WorkerReadDto save(@RequestBody @Valid WorkerSaveEditDto worker) {
         return workerService.save(worker)
                 .get();
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public boolean delete(@PathVariable("id") Long id) {
+    public boolean delete(@PathVariable("id") Long id)  {
         try {
             workerService.delete(id);
-            return true;
+            return  true;
         } catch (EntityNotFoundException e) {
-            log.warn(String.format("WorkerRestController.delete(): worker with id=%d does not exist", id));
+            log.warn(String.format("DELETE /owner-api/v1/worker/%d: there is no entity", id));
             return false;
         }
     }

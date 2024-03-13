@@ -1,9 +1,7 @@
 package ru.shulenin.farmownerapi.dto;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,8 +11,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class SignUpRequest {
 
-    @NotBlank(message = "Адрес электронной почты не может быть пустыми")
+    @NotBlank(message = "email is required field and can not be empty")
+    @Email(message = "email should look like user@somemail.com")
     private String email;
 
+    @NotBlank(message = "password is required field and can not be empty")
     private String password;
 }

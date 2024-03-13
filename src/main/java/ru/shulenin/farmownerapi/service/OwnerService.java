@@ -19,7 +19,6 @@ public class OwnerService implements UserDetailsService {
         return ownerRepository.save(user);
     }
 
-
     /**
      * Создание пользователя
      *

@@ -14,7 +14,7 @@ import ru.shulenin.farmownerapi.service.AuthenticationService;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-public class AuthController {
+public class AuthRestController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/sign-up")
