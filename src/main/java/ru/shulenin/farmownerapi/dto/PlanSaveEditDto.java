@@ -22,7 +22,7 @@ public class PlanSaveEditDto extends AbstractDto {
     private Long productId;
 
     @Positive(message = "amount must be positive")
-    private Integer amount;
+    private Float amount;
 
     @PastOrPresent(message ="date can not be a future")
     private LocalDate date;

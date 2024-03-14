@@ -56,6 +56,7 @@ class WorkerServiceTest extends TestBase {
         var saveDto = new WorkerSaveEditDto(
                 "test@mail.com",
                 "test",
+                "test",
                 "test"
         );
 

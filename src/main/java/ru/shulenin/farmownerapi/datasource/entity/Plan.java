@@ -33,11 +33,11 @@ public class Plan implements Serializable {
     @JoinColumn(name = "product_id")
     private Product product;
 
-    private Integer amount;
+    private Float amount;
 
     private LocalDate date;
 
-    public Plan(Worker worker, Product product, Integer amount, LocalDate date) {
+    public Plan(Worker worker, Product product, Float amount, LocalDate date) {
         this.worker = worker;
         this.product = product;
         this.amount = amount;

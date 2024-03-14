@@ -30,19 +30,19 @@ public class StatisticsRestController {
      * @param month месяц
      * @return результаты выработки
      */
-    @GetMapping("/productivity/{id}")
+    @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public List<ProductivityReport> getProductivity(@PathVariable("id") Long id,
                                                     @RequestParam(value = "month", required = false) Integer month) {
         if (month == null)
-            return reportService.getProductivityForWorker(id);
-        return reportService.getProductivityForWorkerByMonth(id, month);
+            return reportService.getProductivity(id);
+        return reportService.getProductivity(id, month);
     }
 
-    @GetMapping("/productivity/send")
+    @GetMapping("/send")
     @ResponseStatus(HttpStatus.OK)
     public List<ProductivityReport> sendProductivity() throws MessagingException {
-        var commonProductivity = reportService.getCommonProductivity();
+        var commonProductivity = reportService.getProductivity();
         var email = ownerService.getOwner().getEmail();
 
         mailService.send(email, EMAIL_SUBJECT, commonProductivity.toString());

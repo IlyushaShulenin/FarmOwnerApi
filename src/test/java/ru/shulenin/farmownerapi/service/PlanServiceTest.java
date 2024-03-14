@@ -61,7 +61,7 @@ public class PlanServiceTest extends TestBase {
         var saveDto = new PlanSaveEditDto(
                 1L,
                 1L,
-                100,
+                100F,
                 LocalDate.now()
         );
 

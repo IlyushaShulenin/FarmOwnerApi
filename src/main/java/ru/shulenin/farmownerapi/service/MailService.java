@@ -13,8 +13,6 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class MailService {
-    private final JavaMailSender mailSender;
-
     @Value("${spring.mail.username}")
     private String username;
 
@@ -23,6 +21,7 @@ public class MailService {
 
     /**
      * Отправка сообщения
+     *
      * @param emailTo почта получателя
      * @param subject тема собщения
      * @param message сообщение

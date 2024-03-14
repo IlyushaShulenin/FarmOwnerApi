@@ -15,6 +15,6 @@ import java.time.LocalDate;
 public class PlanReadDto extends AbstractDto {
     private WorkerReadDto worker;
     private ProductReadDto product;
-    private Integer amount;
+    private Float amount;
     private LocalDate date;
 }

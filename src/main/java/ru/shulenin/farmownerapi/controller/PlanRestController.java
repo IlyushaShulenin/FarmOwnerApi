@@ -1,6 +1,5 @@
 package ru.shulenin.farmownerapi.controller;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +10,6 @@ import ru.shulenin.farmownerapi.dto.PlanReadDto;
 import ru.shulenin.farmownerapi.dto.PlanSaveEditDto;
 import ru.shulenin.farmownerapi.service.PlanService;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -59,7 +57,10 @@ public class PlanRestController {
     @ResponseStatus(HttpStatus.CREATED)
     public PlanReadDto save(@RequestBody @Valid PlanSaveEditDto planDto) {
         return planService.save(planDto)
-                .get();
+                .orElseThrow(() -> {
+                            log.warn(String.format("DELETE /owner-api/v1/plan: %s wrong data", planDto));
+                            return new ResponseStatusException(HttpStatus.NOT_FOUND);
+                        });
     }
 
     /**
@@ -69,13 +70,8 @@ public class PlanRestController {
      */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public boolean delete(@PathVariable Long id) {
-        try {
-            planService.delete(id);
-            return true;
-        } catch(EntityNotFoundException e) {
-            log.warn(String.format("DELETE /owner-api/v1/plan/%d: there is no entity", id));
-            return false;
-        }
+    public void delete(@PathVariable("id") Long id) {
+        if (!planService.delete(id))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
     }
 }

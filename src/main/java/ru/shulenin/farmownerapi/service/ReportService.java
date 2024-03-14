@@ -96,7 +96,7 @@ public class ReportService {
      * @param workerId id рабочего
      * @return продуктивность рабочего
      */
-    public List<ProductivityReport> getProductivityForWorker(Long workerId) {
+    public List<ProductivityReport> getProductivity(Long workerId) {
         if (!workerRepository.findById(workerId).isPresent()) {
             log.warn(String.format("PersonalInfoService.getProductivityForWorker: entity with id=% does not exist",
                     workerId));
@@ -124,7 +124,7 @@ public class ReportService {
      * @param month месяц
      * @return продуктивность рабочего
      */
-    public List<ProductivityReport> getProductivityForWorkerByMonth(Long workerId, Integer month) {
+    public List<ProductivityReport> getProductivity(Long workerId, Integer month) {
         if (!workerRepository.findById(workerId).isPresent()) {
             log.warn(String.format("PersonalInfoService.getProductivityForWorker: entity with id=% does not exist",
                     workerId));
@@ -147,7 +147,7 @@ public class ReportService {
         return downcastToReport(queryResult);
     }
 
-    public List<ProductivityReport> getCommonProductivity() {
+    public List<ProductivityReport> getProductivity() {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
 
         var queryResult = entityManager.createNativeQuery(

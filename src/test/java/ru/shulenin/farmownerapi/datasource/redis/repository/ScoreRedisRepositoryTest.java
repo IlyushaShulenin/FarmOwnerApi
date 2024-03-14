@@ -3,9 +3,6 @@ package ru.shulenin.farmownerapi.datasource.redis.repository;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import ru.shulenin.farmownerapi.TestBase;
 import ru.shulenin.farmownerapi.annotation.IntegrationTest;
@@ -63,6 +60,7 @@ public class ScoreRedisRepositoryTest extends TestBase implements RedisRepositor
         var worker = new Worker(
                 "test",
                 "test",
+                "test",
                 "test"
         );
 
@@ -96,10 +94,12 @@ public class ScoreRedisRepositoryTest extends TestBase implements RedisRepositor
         var entity1 = new Worker(
                 "test1",
                 "test",
+                "test",
                 "test"
         );
         var entity2 = new Worker(
                 "test2",
+                "test",
                 "test",
                 "test"
         );

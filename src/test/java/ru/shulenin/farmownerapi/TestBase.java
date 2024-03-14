@@ -1,6 +1,5 @@
 package ru.shulenin.farmownerapi;
 
-import com.redis.testcontainers.RedisContainer;
 import org.junit.jupiter.api.BeforeAll;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;

@@ -20,20 +20,6 @@ spring:
     prefix: classpath:/templates/
     suffix: .html
 
-#    mail:
-#      host:
-#      port: 587
-#      username: ilya.shulenin36@gmail.com
-#      password: balwstirrjondcdg
-#      protocol: smtps
-#      properties:
-#        mail:
-#          smtp:
-#            auth: true
-#            starttls:
-#              enable: true
-
-
   mail:
     host: smtp.mail.ru
     port: 465
@@ -48,7 +34,7 @@ spring:
     protocol: smtps
 
 server:
-  port: 8081
+  port: 8082
 
 token:
   signing:

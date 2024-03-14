@@ -19,6 +19,5 @@ public class ProductSaveEditDto extends AbstractDto {
     private String name;
 
     @Enumerated(EnumType.STRING)
-    @NotBlank(message = "product measure is required field and can not be empty")
     private Product.Measure measure;
 }

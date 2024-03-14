@@ -6,7 +6,6 @@ import org.mapstruct.factory.Mappers;
 import ru.shulenin.farmownerapi.datasource.entity.Report;
 import ru.shulenin.farmownerapi.datasource.redis.repository.ProductRedisRepository;
 import ru.shulenin.farmownerapi.datasource.redis.repository.WorkerRedisRepository;
-import ru.shulenin.farmownerapi.datasource.repository.ProductRepository;
 import ru.shulenin.farmownerapi.dto.ReportReadDto;
 import ru.shulenin.farmownerapi.dto.ReportReceiveDto;
 
@@ -42,6 +41,7 @@ public interface ReportMapper {
             return prod;
         }).orElseThrow(EntityNotFoundException::new);
 
+        reportEntity.setId(report.getId());
         reportEntity.setAmount(report.getAmount());
         reportEntity.setDate(report.getDate());
         reportEntity.setPlanIsCompleted(reportEntity.getPlanIsCompleted());

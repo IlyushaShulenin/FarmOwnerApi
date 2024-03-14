@@ -11,14 +11,13 @@ import ru.shulenin.farmownerapi.dto.ProductReadDto;
 import ru.shulenin.farmownerapi.dto.ProductSaveEditDto;
 import ru.shulenin.farmownerapi.service.ProductService;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
  * Контроллер для продуктов
  */
 @RestController
-@RequestMapping("/owner-api/v1/products")
+@RequestMapping("/owner-api/v1/product")
 @RequiredArgsConstructor
 @Slf4j
 public class ProductRestController {

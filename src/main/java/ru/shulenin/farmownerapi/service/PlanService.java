@@ -1,7 +1,7 @@
 package ru.shulenin.farmownerapi.service;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -12,8 +12,6 @@ import ru.shulenin.farmownerapi.datasource.redis.repository.PlanRedisRepository;
 import ru.shulenin.farmownerapi.datasource.redis.repository.ProductRedisRepository;
 import ru.shulenin.farmownerapi.datasource.redis.repository.WorkerRedisRepository;
 import ru.shulenin.farmownerapi.datasource.repository.PlanRepository;
-import ru.shulenin.farmownerapi.datasource.repository.ProductRepository;
-import ru.shulenin.farmownerapi.datasource.repository.WorkerRepository;
 import ru.shulenin.farmownerapi.dto.PlanReadDto;
 import ru.shulenin.farmownerapi.dto.PlanSaveEditDto;
 import ru.shulenin.farmownerapi.dto.PlanSendDto;
@@ -48,17 +46,9 @@ public class PlanService {
      */
     @PostConstruct
     public void init() {
-        planRedisRepository.saveAll(planRedisRepository.findAll());
-        log.info("WorkerService.init: all entities saved to cash");
-    }
-
-    /**
-     * Очистка кэша
-     */
-    @PreDestroy
-    public void destroy() {
         planRedisRepository.clear();
-        log.info("WorkerService.destroy: cache has been cleared");
+        planRedisRepository.saveAll(planRepository.findAll());
+        log.info("WorkerService.init: all entities saved to cash");
     }
 
     /**
@@ -105,21 +95,26 @@ public class PlanService {
      */
     @Transactional
     public Optional<PlanReadDto> save(PlanSaveEditDto planDto) {
-        Plan plan = toEntity(planDto);
+        try {
+            Plan plan = toEntity(planDto);
 
-        planRepository.saveAndFlush(plan);
-        log.info(String.format("PlanService.save: entity %s saved", plan));
+            planRepository.saveAndFlush(plan);
+            log.info(String.format("PlanService.save: entity %s saved", plan));
 
-        planRedisRepository.save(plan);
-        log.info(String.format("PlanService.save: entity %s saved to cache", plan));
+            planRedisRepository.save(plan);
+            log.info(String.format("PlanService.save: entity %s saved to cache", plan));
 
-        var message = planMapper.planToPlanSendDto(plan);
+            var message = planMapper.planToPlanSendDto(plan);
 
-        kafkaPlanTemplate.send("plan.save", message);
-        log.info(String.format("PlanService.save: message %s sent", message));
+            kafkaPlanTemplate.send("plan.save", message);
+            log.info(String.format("PlanService.save: message %s sent", message));
 
-        return Optional.of(plan)
-                .map(this::toDto);
+            return Optional.of(plan)
+                    .map(this::toDto);
+        } catch (EntityNotFoundException e) {
+            log.warn("PlanService.save: entity not found");
+            return Optional.empty();
+        }
     }
 
     /**
@@ -127,10 +122,10 @@ public class PlanService {
      * @param id id плана
      */
     @Transactional
-    public void delete(Long id) {
+    public boolean delete(Long id) {
         var plan = planRedisRepository.findById(id);
 
-        plan.map(pln -> {
+        return plan.map(pln -> {
             var message = planMapper.planToPlanSendDto(pln);
             planRepository.deleteById(id);
             planRedisRepository.delete(id);
@@ -141,10 +136,10 @@ public class PlanService {
             kafkaPlanTemplate.send("plan.delete", message);
             log.info(String.format("send: message(%s) sent", message));
 
-            return pln;
+            return true;
         }).orElseGet(() -> {
             log.warn(String.format("PlanService.delete: entity id=%d not found", id));
-            return null;
+            return false;
         });
     }
 

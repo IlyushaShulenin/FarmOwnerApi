@@ -64,6 +64,7 @@ public class ReportRedisRepositoryTest extends TestBase implements RedisReposito
         var worker = new Worker(
                 "test",
                 "test",
+                "test",
                 "test"
         );
         var product = new Product(
@@ -104,10 +105,12 @@ public class ReportRedisRepositoryTest extends TestBase implements RedisReposito
         var worker1 = new Worker(
                 "test1",
                 "test",
+                "test",
                 "test"
         );
         var worker2 = new Worker(
                 "test2",
+                "test",
                 "test",
                 "test"
         );

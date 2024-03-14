@@ -11,7 +11,6 @@ import ru.shulenin.farmownerapi.dto.WorkerReadDto;
 import ru.shulenin.farmownerapi.dto.WorkerSaveEditDto;
 import ru.shulenin.farmownerapi.service.WorkerService;
 
-import java.util.Collections;
 import java.util.List;
 
 /**

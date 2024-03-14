@@ -21,7 +21,6 @@ public class ReportServiceTest extends TestBase  {
     private final ReportService service;
     private final ReportRepository repository;
 
-
     private final ReportMapper reportMapper = ReportMapper.INSTANCE;
     private final WorkerMapper workerMapper = WorkerMapper.INSTANCE;
     private final ProductMapper productMapper = ProductMapper.INSTANCE;
@@ -57,7 +56,7 @@ public class ReportServiceTest extends TestBase  {
     public void getProductivityForWorker() {
         var workerId = 4L;
 
-        var productivity = service.getProductivityForWorker(workerId);
+        var productivity = service.getProductivity(workerId);
         assertThat(productivity).hasSize(3);
 
         var productivityFiltered = productivity.stream()
@@ -71,7 +70,7 @@ public class ReportServiceTest extends TestBase  {
     public void getProductivityForWorkerByMonth() {
         var workerId = 1L;
 
-        var productivity = service.getProductivityForWorkerByMonth(workerId, 10);
+        var productivity = service.getProductivity(workerId, 10);
         assertThat(productivity).hasSize(3);
     }
 

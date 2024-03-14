@@ -65,6 +65,7 @@ public class PlanRedisRepositoryTest extends TestBase implements RedisRepository
         var worker = new Worker(
                 "test",
                 "test",
+                "test",
                 "test"
         );
         var product = new Product(
@@ -78,7 +79,7 @@ public class PlanRedisRepositoryTest extends TestBase implements RedisRepository
         var entity = new Plan(
                 worker,
                 product,
-                100,
+                100F,
                 LocalDate.now()
         );
 
@@ -103,10 +104,12 @@ public class PlanRedisRepositoryTest extends TestBase implements RedisRepository
         var worker1 = new Worker(
                 "test1",
                 "test",
+                "test",
                 "test"
         );
         var worker2 = new Worker(
                 "test2",
+                "test",
                 "test",
                 "test"
         );
@@ -126,13 +129,13 @@ public class PlanRedisRepositoryTest extends TestBase implements RedisRepository
         var entity1 = new Plan(
             worker1,
             product1,
-            100,
+            100F,
             LocalDate.now()
         ) ;
         var entity2 = new Plan(
             worker2,
             product2,
-            200,
+            200F,
             LocalDate.now()
         );
 

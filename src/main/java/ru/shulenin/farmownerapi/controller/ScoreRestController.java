@@ -1,6 +1,5 @@
 package ru.shulenin.farmownerapi.controller;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +10,6 @@ import ru.shulenin.farmownerapi.dto.ScoreReadDto;
 import ru.shulenin.farmownerapi.dto.ScoreSaveEditDto;
 import ru.shulenin.farmownerapi.service.ScoreService;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -51,14 +49,17 @@ public class ScoreRestController {
 
     /**
      * Сохранение баллов
-     * @param score dto баллов для сохранения
+     * @param scoreDto dto баллов для сохранения
      * @return dto баллов для чтения
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ScoreReadDto save(@RequestBody @Valid ScoreSaveEditDto score) {
-        return scoreService.save(score)
-                .get();
+    public ScoreReadDto save(@RequestBody @Valid ScoreSaveEditDto scoreDto) {
+        return scoreService.save(scoreDto)
+                .orElseThrow(() -> {
+                    log.warn(String.format("POST /owner-api/v1/score: %s wrong data", scoreDto));
+                    return new ResponseStatusException(HttpStatus.NOT_FOUND);
+                });
     }
 
     /**
@@ -68,14 +69,9 @@ public class ScoreRestController {
      */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public boolean delete(@PathVariable("id") Long id) {
-        try {
-            scoreService.delete(id);
-            return true;
-        } catch (EntityNotFoundException e) {
-            log.warn(String.format("DELETE /owner-api/v1/score/%d: there is no entity", id));
-            return false;
-        }
+    public void delete(@PathVariable("id") Long id) {
+        if (!scoreService.delete(id))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
     }
 
 }

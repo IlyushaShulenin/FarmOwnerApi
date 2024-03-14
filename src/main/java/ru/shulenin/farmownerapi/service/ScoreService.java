@@ -1,7 +1,7 @@
 package ru.shulenin.farmownerapi.service;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -11,7 +11,6 @@ import ru.shulenin.farmownerapi.datasource.entity.Score;
 import ru.shulenin.farmownerapi.datasource.redis.repository.ScoreRedisRepository;
 import ru.shulenin.farmownerapi.datasource.redis.repository.WorkerRedisRepository;
 import ru.shulenin.farmownerapi.datasource.repository.ScoreRepository;
-import ru.shulenin.farmownerapi.datasource.repository.WorkerRepository;
 import ru.shulenin.farmownerapi.dto.ScoreReadDto;
 import ru.shulenin.farmownerapi.dto.ScoreSaveEditDto;
 import ru.shulenin.farmownerapi.dto.ScoreSendDto;
@@ -65,24 +64,30 @@ public class ScoreService {
      * @return dto баллов для чтения
      */
     public Optional<ScoreReadDto> findById(Long id) {
-        var score = scoreRedisRepository.findById(id);
+        try {
+            var score = scoreRedisRepository.findById(id);
 
-        if (score.isEmpty()) {
-            score = scoreRepository.findById(id);
+            if (score.isEmpty()) {
+                score = scoreRepository.findById(id);
 
-            score.map(scr -> {
-                scoreRedisRepository.save(scr);
-                log.info(String.format("ScoreService.findById: entity %s saved to cache", scr));
+                score.map(scr -> {
+                    scoreRedisRepository.save(scr);
+                    log.info(String.format("ScoreService.findById: entity %s saved to cache", scr));
 
-                return scr;
-            }).orElseGet(() -> {
-                log.warn(String.format("ScoreService.findById: entity with id=%d does not exist", id));
-                return null;
-            });
+                    return scr;
+                }).orElseGet(() -> {
+                    log.warn(String.format("ScoreService.findById: entity with id=%d does not exist", id));
+                    return null;
+                });
+            }
+
+            return score
+                    .map(this::toDto);
         }
-
-        return score
-                .map(this::toDto);
+        catch (EntityNotFoundException e) {
+            log.warn("PlanService.save: entity not found");
+            return Optional.empty();
+        }
     }
 
     /**
@@ -92,21 +97,27 @@ public class ScoreService {
      */
     @Transactional
     public Optional<ScoreReadDto> save(ScoreSaveEditDto scoreDto) {
-        Score score = toEntity(scoreDto);
+        try {
+            Score score = toEntity(scoreDto);
 
-        scoreRepository.saveAndFlush(score);
-        log.info(String.format("WorkerService.save: entity %s saved", score));
+            scoreRepository.saveAndFlush(score);
+            log.info(String.format("WorkerService.save: entity %s saved", score));
 
-        scoreRedisRepository.save(score);
-        log.info(String.format("ScoreService.save: %s saved to cache", score));
+            scoreRedisRepository.save(score);
+            log.info(String.format("ScoreService.save: %s saved to cache", score));
 
-        var message = scoreMapper.scoreToScoreSendDto(score);
+            var message = scoreMapper.scoreToScoreSendDto(score);
 
-        kafkaScoreTemplate.send("score.save", message);
-        log.info(String.format("ScoreService.save: message %s sent", message));
+            kafkaScoreTemplate.send("score.save", message);
+            log.info(String.format("ScoreService.save: message %s sent", message));
 
-        return Optional.of(score)
-                .map(this::toDto);
+            return Optional.of(score)
+                    .map(this::toDto);
+        }
+        catch (EntityNotFoundException e) {
+            log.warn("ScoreService.save: entity not found");
+            return Optional.empty();
+        }
     }
 
     /**
@@ -114,10 +125,10 @@ public class ScoreService {
      * @param id id баллов
      */
     @Transactional
-    public void delete(Long id) {
+    public boolean delete(Long id) {
         var score = scoreRedisRepository.findById(id);
 
-        score.map(scr -> {
+        return score.map(scr -> {
             var message = scoreMapper.scoreToScoreSendDto(scr);
 
             scoreRepository.deleteById(id);
@@ -129,10 +140,10 @@ public class ScoreService {
             kafkaScoreTemplate.send("score.delete", message);
             log.info(String.format("send: message(%s) sent", message));
 
-            return scr;
+            return true;
         }).orElseGet(() -> {
             log.warn(String.format("ScoreService.delete: entity id=%d not found", id));
-            return null;
+            return false;
         });
     }
 

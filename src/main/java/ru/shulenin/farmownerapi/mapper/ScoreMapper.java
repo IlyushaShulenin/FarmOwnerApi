@@ -2,6 +2,7 @@ package ru.shulenin.farmownerapi.mapper;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 import ru.shulenin.farmownerapi.datasource.entity.Score;
 import ru.shulenin.farmownerapi.datasource.redis.repository.WorkerRedisRepository;
@@ -60,5 +61,6 @@ public interface ScoreMapper {
      * @param score сущность
      * @return сообщение
      */
+    @Mapping(target = "workerId", source = "score.worker.id")
     public ScoreSendDto scoreToScoreSendDto(Score score);
 }
