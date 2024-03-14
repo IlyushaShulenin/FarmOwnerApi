@@ -32,4 +32,10 @@ public class Score implements Serializable {
     private Integer score;
 
     private LocalDate date;
+
+    public Score(Worker worker, Integer score, LocalDate date) {
+        this.worker = worker;
+        this.score = score;
+        this.date = date;
+    }
 }

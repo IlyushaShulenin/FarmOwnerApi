@@ -31,7 +31,6 @@ public class WorkerService {
     private final WorkerRepository workerRepository;
     private final WorkerRedisRepository workerRedisRepository;
     private final ScoreRepository scoreRepository;
-    private final PlanRepository planRepository;
 
     private final KafkaTemplate<Long, WorkerSendDto> kafkaWorkerTemplate;
 
@@ -42,18 +41,19 @@ public class WorkerService {
      */
     @PostConstruct
     public void init() {
+        workerRedisRepository.clear();
         workerRedisRepository.saveAll(workerRepository.findAll());
         log.info("WorkerService.init: all entities saved to cash");
     }
 
-    /**
-     * Очистка кэша
-     */
-    @PreDestroy
-    public void destroy() {
-        workerRedisRepository.clear();
-        log.info("WorkerService.destroy: cache has been cleared");
-    }
+//    /**
+//     * Очистка кэша
+//     */
+//    @PreDestroy
+//    public void destroy() {
+//        workerRedisRepository.clear();
+//        log.info("WorkerService.destroy: cache has been cleared");
+//    }
 
     /**
      * Получить всех рабочих
@@ -126,9 +126,9 @@ public class WorkerService {
 
         worker.map(wrk -> {
             var message = workerMapper.workerToWorkerSendDto(wrk);
-            workerRepository.deleteById(id);
+
+            workerRepository.retireWorker(id);
             scoreRepository.deleteAllByWorkerId(id);
-            planRepository.deleteAllByWorkerId(id);
             workerRedisRepository.delete(id);
 
             log.info(String.format("WorkerService.delete: entity %s deleted", wrk));

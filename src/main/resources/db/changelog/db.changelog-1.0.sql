@@ -4,9 +4,11 @@
 CREATE TABLE worker(
     id BIGSERIAL,
     email VARCHAR(128) UNIQUE,
+    password VARCHAR(128) default '{noop}123',
     name VARCHAR(64),
     surname VARCHAR(64),
     status VARCHAR(32),
+    is_working BOOLEAN DEFAULT true,
 
     PRIMARY KEY (id)
 );
@@ -16,6 +18,7 @@ CREATE TABLE product(
     id BIGSERIAL,
     name VARCHAR(128) UNIQUE,
     measure VARCHAR(32),
+    is_produced BOOLEAN DEFAULT true,
 
     PRIMARY KEY (id)
 );

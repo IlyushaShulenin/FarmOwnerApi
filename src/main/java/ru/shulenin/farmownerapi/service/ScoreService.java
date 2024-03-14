@@ -43,17 +43,9 @@ public class ScoreService {
      */
     @PostConstruct
     public void init() {
-        scoreRedisRepository.saveAll(scoreRepository.findAll());
-        log.info("WorkerService.init: all entities saved to cash");
-    }
-
-    /**
-     * Очистка кэша
-     */
-    @PreDestroy
-    public void destroy() {
         scoreRedisRepository.clear();
-        log.info("WorkerService.destroy: cache has been cleared");
+        scoreRedisRepository.saveAll(scoreRepository.findAll());
+        log.info("ScoreService.init: all entities saved to cash");
     }
 
     /**

@@ -59,7 +59,7 @@ public class PlanRedisRepository implements RedisRepository<Plan, Long> {
      */
     @Override
     public void saveAll(List<Plan> entities) {
-        if (entities.isEmpty()) {
+        if (!entities.isEmpty()) {
             Map<Long, Plan> entries = new HashMap<>();
 
             for (var entity : entities)

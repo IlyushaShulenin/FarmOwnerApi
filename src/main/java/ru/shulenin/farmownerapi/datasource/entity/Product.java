@@ -29,7 +29,14 @@ public class Product implements Serializable {
     @Enumerated(EnumType.STRING)
     private Measure measure;
 
+    private Boolean isProduced = true;
+
     public enum Measure {
         LITER, KG, UNIT
+    }
+
+    public Product(String name, Measure measure) {
+        this.name = name;
+        this.measure = measure;
     }
 }

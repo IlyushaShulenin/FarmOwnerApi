@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import ru.shulenin.farmownerapi.dto.ProductReadDto;
 import ru.shulenin.farmownerapi.dto.ProductSaveEditDto;
-import ru.shulenin.farmownerapi.exception.ThereAreNotEntities;
 import ru.shulenin.farmownerapi.service.ProductService;
 
 import java.util.Collections;
@@ -32,12 +31,7 @@ public class ProductRestController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<ProductReadDto> findAll() {
-        try {
-            return productService.findAll();
-        } catch(ThereAreNotEntities e) {
-            log.warn("GET /owner-api/v1/products: there are no entities");
-            return Collections.emptyList();
-        }
+        return productService.findAll();
     }
 
     /**

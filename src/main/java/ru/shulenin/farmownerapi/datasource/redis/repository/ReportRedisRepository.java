@@ -58,7 +58,7 @@ public class ReportRedisRepository implements RedisRepository<Report, Long> {
      */
     @Override
     public void saveAll(List<Report> entities) {
-        if (entities.isEmpty()) {
+        if (!entities.isEmpty()) {
             Map<Long, Report> entries = new HashMap<>();
 
             for (var entity : entities)

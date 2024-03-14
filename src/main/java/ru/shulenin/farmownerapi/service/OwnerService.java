@@ -16,7 +16,13 @@ import ru.shulenin.farmownerapi.datasource.repository.OwnerRepository;
 @RequiredArgsConstructor
 @Transactional
 public class OwnerService implements UserDetailsService {
+    private final static String OWNER_EMAIL = "ilya.shulenin36@gmail.com";
+
     private final OwnerRepository ownerRepository;
+
+    public Owner getOwner() {
+        return ownerRepository.findByEmail(OWNER_EMAIL);
+    }
 
     public Owner save(Owner user) {
         return ownerRepository.save(user);

@@ -1,5 +1,6 @@
 package ru.shulenin.farmownerapi.service;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -32,6 +33,17 @@ public class ProductService {
     private final ProductMapper productMapper = ProductMapper.INSTANCE;
 
     /**
+     * Инициализация кэша
+     */
+    @PostConstruct
+    public void init() {
+        productRedisRepository.clear();
+        productRedisRepository.saveAll(productRepository.findAll());
+        log.info("ProductService.init: all entities saved to cash");
+    }
+
+
+    /**
      * Получить все продукты
      * @return список продуктов
      */
@@ -55,7 +67,6 @@ public class ProductService {
 
             product.map(prod -> {
                 productRedisRepository.save(prod);
-
                 log.info(String.format("ProductService.findById: entity %s saved to cache", prod));
 
                 return prod;
@@ -103,7 +114,8 @@ public class ProductService {
 
         product.map(prod -> {
             var message = productMapper.productToSendDto(prod);
-            productRepository.deleteById(id);
+
+            productRepository.cancelProduct(id);
             productRedisRepository.delete(id);
 
             log.info(String.format("ProductService.delete: entity %s deleted", prod));

@@ -4,12 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import ru.shulenin.farmownerapi.TestBase;
 import ru.shulenin.farmownerapi.annotation.IntegrationTest;
-import ru.shulenin.farmownerapi.datasource.entity.Plan;
-import ru.shulenin.farmownerapi.datasource.repository.PlanRepository;
-import ru.shulenin.farmownerapi.dto.PlanReadDto;
-import ru.shulenin.farmownerapi.dto.PlanSaveEditDto;
-import ru.shulenin.farmownerapi.mapper.PlanMapper;
-import ru.shulenin.farmownerapi.mapper.ProductMapper;
+import ru.shulenin.farmownerapi.datasource.entity.Score;
+import ru.shulenin.farmownerapi.datasource.repository.ScoreRepository;
+import ru.shulenin.farmownerapi.dto.ScoreReadDto;
+import ru.shulenin.farmownerapi.dto.ScoreSaveEditDto;
+import ru.shulenin.farmownerapi.mapper.ScoreMapper;
 import ru.shulenin.farmownerapi.mapper.WorkerMapper;
 
 import java.time.LocalDate;
@@ -19,13 +18,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @IntegrationTest
 @RequiredArgsConstructor
-public class PlanServiceTest extends TestBase {
-    private final PlanService service;
-    private final PlanRepository repository;
+public class ScoreServiceTest extends TestBase {
+    private final ScoreService service;
+    private final ScoreRepository repository;
 
-    private final PlanMapper planMapper = PlanMapper.INSTANCE;
+    private final ScoreMapper scoreMapper = ScoreMapper.INSTANCE;
     private final WorkerMapper workerMapper = WorkerMapper.INSTANCE;
-    private final ProductMapper productMapper = ProductMapper.INSTANCE;
 
     @Test
     void findAll() {
@@ -43,8 +41,7 @@ public class PlanServiceTest extends TestBase {
 
         var dtoFromService = service.findById(id).get();
         var entity = repository.findById(id).get();
-        var dtoFromRepository = planMapper.planToPlanReadDto(entity, workerMapper,
-                productMapper);
+        var dtoFromRepository = scoreMapper.scoreToScoreReadDto(entity, workerMapper);
 
         assertThat(dtoFromService).isEqualTo(dtoFromRepository);
 
@@ -58,10 +55,9 @@ public class PlanServiceTest extends TestBase {
     void save() {
         var id = 21L;
 
-        var saveDto = new PlanSaveEditDto(
+        var saveDto = new ScoreSaveEditDto(
                 1L,
-                1L,
-                100,
+                10,
                 LocalDate.now()
         );
 
@@ -69,8 +65,7 @@ public class PlanServiceTest extends TestBase {
 
         assertThat(readDto).isPresent();
         assertThat(readDto.get().getWorker().getId()).isEqualTo(1L);
-        assertThat(readDto.get().getProduct().getId()).isEqualTo(1L);
-        assertThat(readDto.get().getAmount()).isEqualTo(100);
+        assertThat(readDto.get().getScore()).isEqualTo(10);
         assertThat(readDto.get().getDate()).isEqualTo(LocalDate.now());
 
         var savedEntity = service.findById(id);
@@ -88,8 +83,8 @@ public class PlanServiceTest extends TestBase {
         assertThat(deletedEntity).isEmpty();
     }
 
-    private boolean checkSize(List<PlanReadDto> workersFromService,
-                              List<Plan> workerFromRepository) {
+    private boolean checkSize(List<ScoreReadDto> workersFromService,
+                              List<Score> workerFromRepository) {
         var sizeOfaAlFromService = workersFromService.size();
         var sizeOfAllFromRepository = workerFromRepository.size();
 

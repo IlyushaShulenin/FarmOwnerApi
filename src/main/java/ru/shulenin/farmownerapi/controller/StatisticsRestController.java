@@ -1,11 +1,12 @@
 package ru.shulenin.farmownerapi.controller;
 
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 import ru.shulenin.farmownerapi.dto.ProductivityReport;
 import ru.shulenin.farmownerapi.service.MailService;
+import ru.shulenin.farmownerapi.service.OwnerService;
 import ru.shulenin.farmownerapi.service.ReportService;
 
 import java.util.List;
@@ -17,8 +18,11 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/owner-api/v1/statistics")
 public class StatisticsRestController {
+    private final static String EMAIL_SUBJECT = "Report";
+
     private final ReportService reportService;
     private final MailService mailService;
+    private final OwnerService ownerService;
 
     /**
      * Результаты выработки рабочего(данные об объеме проведенной работы в сравнении с планами)
@@ -35,17 +39,14 @@ public class StatisticsRestController {
         return reportService.getProductivityForWorkerByMonth(id, month);
     }
 
-    @GetMapping("/productivity/send/{id}")
+    @GetMapping("/productivity/send")
     @ResponseStatus(HttpStatus.OK)
-    public List<ProductivityReport> getProductivity(@PathVariable("id") Long id,
-                                                    @RequestParam(value = "month", required = false) Integer month,
-                                                    ModelAndView model) {
-        var productivityReport = reportService.getProductivityForWorker(id);
-        model.addObject("reports", productivityReport);
-        model.setViewName("report-mail");
+    public List<ProductivityReport> sendProductivity() throws MessagingException {
+        var commonProductivity = reportService.getCommonProductivity();
+        var email = ownerService.getOwner().getEmail();
 
-        if (month == null)
-            return reportService.getProductivityForWorker(id);
-        return reportService.getProductivityForWorkerByMonth(id, month);
+        mailService.send(email, EMAIL_SUBJECT, commonProductivity.toString());
+
+        return commonProductivity;
     }
 }

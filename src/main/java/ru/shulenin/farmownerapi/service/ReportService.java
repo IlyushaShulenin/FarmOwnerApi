@@ -1,5 +1,6 @@
 package ru.shulenin.farmownerapi.service;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityNotFoundException;
@@ -11,9 +12,7 @@ import ru.shulenin.farmownerapi.datasource.entity.Report;
 import ru.shulenin.farmownerapi.datasource.redis.repository.ProductRedisRepository;
 import ru.shulenin.farmownerapi.datasource.redis.repository.ReportRedisRepository;
 import ru.shulenin.farmownerapi.datasource.redis.repository.WorkerRedisRepository;
-import ru.shulenin.farmownerapi.datasource.repository.ProductRepository;
 import ru.shulenin.farmownerapi.datasource.repository.ReportRepository;
-import ru.shulenin.farmownerapi.datasource.repository.WorkerRepository;
 import ru.shulenin.farmownerapi.dto.*;
 import ru.shulenin.farmownerapi.mapper.ProductMapper;
 import ru.shulenin.farmownerapi.mapper.ReportMapper;
@@ -45,21 +44,21 @@ public class ReportService {
     private final ProductMapper productMapper = ProductMapper.INSTANCE;
 
     /**
+     * Инициализация кэша
+     */
+    @PostConstruct
+    public void init() {
+        reportRedisRepository.clear();
+        reportRedisRepository.saveAll(reportRepository.findAll());
+        log.info("ScoreService.init: all entities saved to cash");
+    }
+
+
+    /**
      * Получить все отчеты
      * @return список отчетов
      */
     public List<ReportReadDto> findAll() {
-        if (reportRedisRepository.isEmpty()) {
-            List<Report> reports = reportRepository.findAll();
-            reportRedisRepository.saveAll(reports);
-
-            log.info("ReportService.findAll: all entities saved to cash");
-
-            return reports.stream()
-                    .map(this::toDto)
-                    .toList();
-        }
-
         return reportRedisRepository.findAll()
                 .stream()
                 .map(this::toDto)
@@ -143,6 +142,20 @@ public class ReportService {
                                 "HAVING t.worker_id = :id AND EXTRACT(MONTH from t.r_date) = :month")
                 .setParameter("id", workerId)
                 .setParameter("month", month)
+                .getResultList();
+
+        return downcastToReport(queryResult);
+    }
+
+    public List<ProductivityReport> getCommonProductivity() {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+
+        var queryResult = entityManager.createNativeQuery(
+                        "SELECT t.worker_id, t.product_id, SUM(t.r_amount), SUM(t.p_amount), t.r_date FROM " +
+                                "(SELECT r.worker_id, r.product_id, r.date AS r_date, r.amount AS r_amount, p.amount AS p_amount " +
+                                "FROM report AS r JOIN plan AS p " +
+                                "ON r.worker_id = p.worker_id AND r.product_id = p.product_id AND p.date = r.date) AS t " +
+                                "GROUP BY t.worker_id, t.product_id, t.r_date ")
                 .getResultList();
 
         return downcastToReport(queryResult);

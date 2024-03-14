@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import ru.shulenin.farmownerapi.dto.WorkerReadDto;
 import ru.shulenin.farmownerapi.dto.WorkerSaveEditDto;
-import ru.shulenin.farmownerapi.exception.ThereAreNotEntities;
 import ru.shulenin.farmownerapi.service.WorkerService;
 
 import java.util.Collections;
@@ -33,12 +32,7 @@ public class WorkerRestController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<WorkerReadDto> findAll() {
-        try {
-            return workerService.findAll();
-        } catch (ThereAreNotEntities e) {
-            log.warn("GET /owner-api/v1/worker: there are no entities");
-            return Collections.emptyList();
-        }
+        return workerService.findAll();
     }
 
     /**

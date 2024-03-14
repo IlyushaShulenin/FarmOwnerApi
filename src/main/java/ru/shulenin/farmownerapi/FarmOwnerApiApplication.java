@@ -13,7 +13,7 @@ import org.springframework.kafka.annotation.EnableKafka;
 public class FarmOwnerApiApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(FarmOwnerApiApplication.class, args);
+        var context = SpringApplication.run(FarmOwnerApiApplication.class, args);
     }
 
 }

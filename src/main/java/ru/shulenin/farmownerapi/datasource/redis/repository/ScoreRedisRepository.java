@@ -58,7 +58,7 @@ public class ScoreRedisRepository implements RedisRepository<Score, Long> {
      */
     @Override
     public void saveAll(List<Score> entities) {
-        if (entities.isEmpty()) {
+        if (!entities.isEmpty()) {
             Map<Long, Score> entries = new HashMap<>();
 
             for (var entity : entities)

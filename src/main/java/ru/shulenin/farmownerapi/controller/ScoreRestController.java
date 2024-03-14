@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import ru.shulenin.farmownerapi.dto.ScoreReadDto;
 import ru.shulenin.farmownerapi.dto.ScoreSaveEditDto;
-import ru.shulenin.farmownerapi.exception.ThereAreNotEntities;
 import ru.shulenin.farmownerapi.service.ScoreService;
 
 import java.util.Collections;
@@ -32,12 +31,7 @@ public class ScoreRestController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<ScoreReadDto> findAll() {
-        try {
-            return scoreService.findAll();
-        } catch (ThereAreNotEntities e) {
-            log.warn("GET /owner-api/v1/score: there are not entities");
-            return Collections.emptyList();
-        }
+        return scoreService.findAll();
     }
 
     /**

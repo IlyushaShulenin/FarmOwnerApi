@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Сущность рабочего
@@ -28,9 +29,13 @@ public class Worker implements Serializable {
     @Column(unique = true)
     private String email;
 
+    private String password;
+
     private String name;
 
     private String surname;
+
+    private Boolean isWorking = true;
 
     public Worker(String email, String name, String surname) {
         this.email = email;

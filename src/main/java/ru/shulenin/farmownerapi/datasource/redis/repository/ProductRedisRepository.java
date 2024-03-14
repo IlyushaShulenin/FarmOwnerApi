@@ -59,7 +59,7 @@ public class ProductRedisRepository implements RedisRepository<Product, Long> {
      */
     @Override
     public void saveAll(List<Product> entities) {
-        if (entities.isEmpty()) {
+        if (!entities.isEmpty()) {
             Map<Long, Product> entries = new HashMap<>();
 
             for (var entity : entities)

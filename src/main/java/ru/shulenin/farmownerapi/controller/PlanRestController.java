@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import ru.shulenin.farmownerapi.dto.PlanReadDto;
 import ru.shulenin.farmownerapi.dto.PlanSaveEditDto;
-import ru.shulenin.farmownerapi.exception.ThereAreNotEntities;
 import ru.shulenin.farmownerapi.service.PlanService;
 
 import java.util.Collections;
@@ -28,17 +27,11 @@ public class PlanRestController {
     /**
      * Вернуть все планы
      * @return список планов
-     * @throws ThereAreNotEntities
      */
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<PlanReadDto> findAll() throws ThereAreNotEntities {
-        try {
-            return planService.findAll();
-        } catch(ThereAreNotEntities e) {
-            log.warn("GET /owner-api/v1/plan: there are no entities");
-            return Collections.emptyList();
-        }
+    public List<PlanReadDto> findAll() {
+        return planService.findAll();
     }
 
     /**
