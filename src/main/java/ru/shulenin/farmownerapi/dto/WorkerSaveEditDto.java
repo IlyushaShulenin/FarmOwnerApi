@@ -17,6 +17,9 @@ public class WorkerSaveEditDto extends AbstractDto {
     @Email(message = "email should look like user@somemail.com")
     private String email;
 
+    @NotBlank(message = "password is required field")
+    private String password;
+
     @NotBlank(message = "name is required field and can not be empty")
     private String name;
 

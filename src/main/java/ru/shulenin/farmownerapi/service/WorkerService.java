@@ -1,15 +1,14 @@
 package ru.shulenin.farmownerapi.service;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.shulenin.farmownerapi.datasource.entity.Worker;
 import ru.shulenin.farmownerapi.datasource.redis.repository.WorkerRedisRepository;
-import ru.shulenin.farmownerapi.datasource.repository.PlanRepository;
 import ru.shulenin.farmownerapi.datasource.repository.ScoreRepository;
 import ru.shulenin.farmownerapi.datasource.repository.WorkerRepository;
 import ru.shulenin.farmownerapi.dto.WorkerReadDto;
@@ -33,6 +32,7 @@ public class WorkerService {
     private final ScoreRepository scoreRepository;
 
     private final KafkaTemplate<Long, WorkerSendDto> kafkaWorkerTemplate;
+    private final PasswordEncoder passwordEncoder;
 
     private final WorkerMapper workerMapper = WorkerMapper.INSTANCE;
 
@@ -99,7 +99,7 @@ public class WorkerService {
      */
     @Transactional
     public Optional<WorkerReadDto> save(WorkerSaveEditDto workerDto) {
-        Worker worker = workerMapper.workerSaveEditDtoToWorker(workerDto);
+        Worker worker = workerMapper.workerSaveEditDtoToWorker(workerDto, passwordEncoder);
 
         workerRepository.saveAndFlush(worker);
         log.info(String.format("WorkerService.save: entity %s saved", worker));

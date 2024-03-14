@@ -2,10 +2,8 @@ package ru.shulenin.farmownerapi.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import ru.shulenin.farmownerapi.datasource.entity.Worker;
-import ru.shulenin.farmownerapi.datasource.repository.PlanRepository;
-import ru.shulenin.farmownerapi.datasource.repository.ReportRepository;
-import ru.shulenin.farmownerapi.datasource.repository.ScoreRepository;
 import ru.shulenin.farmownerapi.dto.WorkerReadDto;
 import ru.shulenin.farmownerapi.dto.WorkerSaveEditDto;
 import ru.shulenin.farmownerapi.dto.WorkerSendDto;
@@ -37,5 +35,12 @@ public interface WorkerMapper {
      * @param worker dto для сохранения
      * @return сущность
      */
-    public Worker workerSaveEditDtoToWorker(WorkerSaveEditDto worker);
+    default  public Worker workerSaveEditDtoToWorker(WorkerSaveEditDto worker, PasswordEncoder passwordEncoder) {
+        return new Worker(
+                worker.getEmail(),
+                passwordEncoder.encode(worker.getPassword()),
+                worker.getName(),
+                worker.getSurname()
+        );
+    }
 }
