@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Сурвис для работы с рабочими
+ * Сервис для работы с рабочими
  */
 @Service
 @RequiredArgsConstructor
